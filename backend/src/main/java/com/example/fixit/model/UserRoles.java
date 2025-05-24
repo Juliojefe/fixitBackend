@@ -19,6 +19,24 @@ public class UserRoles {
     @Column(name = "ismechanic", nullable = false)
     private Boolean isMechanic = false;
 
+    public UserRoles(Integer userId, Boolean isAdmin, Boolean isMechanic) {
+        this.userId = userId;
+        this.isAdmin = isAdmin;
+        this.isMechanic = isMechanic;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        UserRoles that = (UserRoles) o;
+
+        return (userId != null && userId.equals(that.userId)) &&
+                (isAdmin != null && isAdmin.equals(that.isAdmin)) &&
+                (isMechanic != null && isMechanic.equals(that.isMechanic));
+    }
+
     // Getters and setters
     public Integer getUserId() {
         return userId;
