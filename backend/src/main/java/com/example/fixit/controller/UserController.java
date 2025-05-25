@@ -1,5 +1,6 @@
 package com.example.fixit.controller;
 
+import com.example.fixit.dto.*;
 import com.example.fixit.model.User;
 import com.example.fixit.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,11 +15,58 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @GetMapping("/")
-    public String index() {
-        return "Greetings from Spring Boot!";
+    @PostMapping("/register")
+    public UserRegisterResponse register(@RequestBody UserRegisterRequest request) {
+        return userService.registerUser(request);
     }
 
+    @PostMapping("/login")
+    public UserLoginResponse loginUser(@RequestBody UserLoginRequest request) {
+        return userService.loginUser(request);
+    }
 
-    //  TODO
+    @GetMapping("/")
+    public List<User> getAllUsers() {
+        return userService.getAllUsers();
+    }
+
+    @PatchMapping("/update-name/{id}/name")
+    public boolean updateUserName(@RequestBody UpdateNameRequest request) {
+        return userService.updateName(request);
+    }
+
+    @PatchMapping("update-email/{id}/email")
+    public boolean updateEmail(@RequestBody UpdateEmailRequest request) {
+        return userService.updateEmail(request);
+    }
+
+    @PatchMapping("update-password/{id}/password")
+    public boolean updatePassword(@RequestBody UpdatePasswordRequest request) {
+        return userService.updatePassword(request);
+    }
+
+    @PatchMapping("make-admin/{id}")
+    public boolean makeAdmin(@RequestBody int requestUserId) {
+        return userService.makeAdmin(requestUserId);
+    }
+
+    @PatchMapping("make-mechanic/{id}")
+    public boolean makeMechanic(@RequestBody int requestUserId) {
+        return userService.makeMechanic(requestUserId);
+    }
+
+    @PatchMapping("make-regular-user/{id}")
+    public boolean makeRegularUser(@RequestBody int requestUserId) {
+        return userService.makeRegularUser(requestUserId);
+    }
+
+    @PatchMapping("update-profile-pic/{id}/url-new-pic")
+    public boolean updateProfilePic(@RequestBody UpdateProfilePicRequest request) {
+        return userService.updateProfilePic(request);
+    }
+
+    @DeleteMapping("/delete-user/{id}")
+    public boolean deleteUser(@RequestBody int requestUserId) {
+        return userService.deleteUser(requestUserId);
+    }
 }
