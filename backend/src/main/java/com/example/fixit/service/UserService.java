@@ -39,6 +39,12 @@ public class UserService {
             logger.warn("Registration failed: User with email {} already exists", request.getEmail());
             return new UserRegisterResponse(false, "", "", "", -1);
         }
+
+        if (!isValidPassword(request.getPassword())) {
+            logger.warn("Registration failed: Invalid password for email {}", request.getEmail());
+            return new UserRegisterResponse(false, "", "", "", -1);
+        }
+
         User newUser = new User();
         newUser.setEmail(request.getEmail());
         newUser.setProfilePic(request.getProfilePic());
@@ -66,6 +72,14 @@ public class UserService {
         logger.info("User with email {} registered successfully", request.getEmail());
         return new UserRegisterResponse(true, newUser.getName(),
                 newUser.getEmail(), newUser.getProfilePic(), newUser.getUserId());
+    }
+
+    public boolean isValidPassword(String password) {
+        if (password == null || password.length() < 8) {
+            return false;
+        }
+        String passwordRegex = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[!@#$%^&*()_\\+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]).{8,}$";
+        return password.matches(passwordRegex);
     }
 
     public UserLoginResponse loginUser(UserLoginRequest request) {
@@ -132,6 +146,10 @@ public class UserService {
             String storedHashedPassword = tempUser.getPassword();
             String newPassword = request.getNewPassword();
             if (passwordEncoder.matches(oldPassword, storedHashedPassword)) {
+                if (!isValidPassword(newPassword)) {
+                    logger.warn("Password update failed: Invalid new password for user id {}", request.getUserId());
+                    return false;
+                }
                 tempUser.setPassword(passwordEncoder.encode(newPassword));
                 userRepository.save(tempUser);
                 logger.info("password update successfully");
