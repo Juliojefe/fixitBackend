@@ -19,10 +19,18 @@ public class UserRoles {
     @Column(name = "ismechanic", nullable = false)
     private Boolean isMechanic = false;
 
-    public UserRoles(Integer userId, Boolean isAdmin, Boolean isMechanic) {
+    public UserRoles(Integer userId, User user, Boolean isAdmin, Boolean isMechanic) {
         this.userId = userId;
+        this.user = user;
         this.isAdmin = isAdmin;
         this.isMechanic = isMechanic;
+    }
+
+    public UserRoles() {
+        userId = null;
+        user = null;
+        isAdmin = false;
+        isMechanic = false;
     }
 
     @Override

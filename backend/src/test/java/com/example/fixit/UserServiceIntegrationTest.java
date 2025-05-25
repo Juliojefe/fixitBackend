@@ -3,9 +3,11 @@ package com.example.fixit;
 import com.example.fixit.dto.*;
 import com.example.fixit.model.User;
 import com.example.fixit.model.UserRoles;
+import com.example.fixit.dto.UserRegisterRequest;
 import com.example.fixit.repository.UserRepository;
 import com.example.fixit.repository.UserRolesRepository;
 import com.example.fixit.service.UserService;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +16,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -32,6 +35,9 @@ public class UserServiceIntegrationTest {
 
     private BCryptPasswordEncoder passwordEncoder;
 
+    @Autowired
+    private EntityManager entityManager;
+
     @BeforeEach
     void setUp() {
         passwordEncoder = new BCryptPasswordEncoder();
@@ -41,9 +47,7 @@ public class UserServiceIntegrationTest {
     @Test
     void registerUser_successfulRegistration() {
         UserRegisterRequest request = new UserRegisterRequest("John Doe", "john@example.com", "password123", "pic.jpg");
-
         UserRegisterResponse response = userService.registerUser(request);
-
         assertTrue(response.getSuccess());
         User savedUser = userRepository.findByEmail("john@example.com").orElseThrow();
         assertEquals("John Doe", savedUser.getName());
@@ -54,267 +58,221 @@ public class UserServiceIntegrationTest {
 
     @Test
     void registerUser_duplicateEmail() {
-        // Arrange: Create a user with the same email
-        User existingUser = new User();
-        existingUser.setName("Existing User");
-        existingUser.setEmail("john@example.com");
-        existingUser.setPassword("password");
-        userRepository.save(existingUser);
+        UserRegisterRequest firstRequest = new UserRegisterRequest("Existing User", "john@example.com", "password", "");
+        UserRegisterResponse firstResponse = userService.registerUser(firstRequest);
+        assertTrue(firstResponse.getSuccess());
 
-        UserRegisterRequest request = new UserRegisterRequest("John Doe", "john@example.com", "password123", "pic.jpg");
-
-        UserRegisterResponse response = userService.registerUser(request);
-
-        assertFalse(response.getSuccess());
+        // Try to register second user with the same email
+        UserRegisterRequest secondRequest = new UserRegisterRequest("John Doe", "john@example.com", "password123", "pic.jpg");
+        UserRegisterResponse secondResponse = userService.registerUser(secondRequest);
+        assertFalse(secondResponse.getSuccess());
     }
 
     // --- loginUser Tests ---
     @Test
     void loginUser_successfulLogin() {
-        // Arrange: Create a user
-        User user = new User();
-        user.setName("John Doe");
-        user.setEmail("john@example.com");
-        user.setPassword(passwordEncoder.encode("password123"));
-        userRepository.save(user);
+        UserRegisterRequest registerRequest = new UserRegisterRequest("John Doe", "john@example.com", "password123", "");
+        UserRegisterResponse registerResponse = userService.registerUser(registerRequest);
+        assertTrue(registerResponse.getSuccess());
 
-        UserLoginRequest request = new UserLoginRequest("john@example.com", "password123");
-
-        UserLoginResponse response = userService.loginUser(request);
-
-        assertTrue(response.getSuccess());
-        assertEquals("John Doe", response.getName());
+        // Login with the registered user
+        UserLoginRequest loginRequest = new UserLoginRequest("john@example.com", "password123");
+        UserLoginResponse loginResponse = userService.loginUser(loginRequest);
+        assertTrue(loginResponse.getSuccess());
+        assertEquals("John Doe", loginResponse.getName());
     }
 
     @Test
     void loginUser_wrongPassword() {
-        // Arrange: Create a user
-        User user = new User();
-        user.setName("John Doe");
-        user.setEmail("john@example.com");
-        user.setPassword(passwordEncoder.encode("password123"));
-        userRepository.save(user);
+        UserRegisterRequest registerRequest = new UserRegisterRequest("John Doe", "john@example.com", "password123", "");
+        UserRegisterResponse registerResponse = userService.registerUser(registerRequest);
+        assertTrue(registerResponse.getSuccess());
 
-        UserLoginRequest request = new UserLoginRequest("john@example.com", "wrongpassword");
-
-        UserLoginResponse response = userService.loginUser(request);
-
-        assertFalse(response.getSuccess());
+        // Try to login with wrong password
+        UserLoginRequest loginRequest = new UserLoginRequest("john@example.com", "wrongpassword");
+        UserLoginResponse loginResponse = userService.loginUser(loginRequest);
+        assertFalse(loginResponse.getSuccess());
     }
 
     @Test
     void loginUser_nonExistentEmail() {
         UserLoginRequest request = new UserLoginRequest("john@example.com", "password123");
-
         UserLoginResponse response = userService.loginUser(request);
-
         assertFalse(response.getSuccess());
     }
 
     // --- getAllUsers Tests ---
     @Test
     void getAllUsers_withUsers() {
-        // Arrange: Create a user
-        User user = new User();
-        user.setName("John Doe");
-        user.setEmail("john@example.com");
-        user.setPassword("password");
-        userRepository.save(user);
+        UserRegisterRequest registerRequest = new UserRegisterRequest("John Doe", "john@example.com", "password", "");
+        UserRegisterResponse registerResponse = userService.registerUser(registerRequest);
+        assertTrue(registerResponse.getSuccess());
 
+        // Get all users
         List<User> users = userService.getAllUsers();
-
         assertFalse(users.isEmpty());
     }
 
     @Test
     void getAllUsers_noUsers() {
-        // Assuming the database is empty or we clear it for this test
-        userRepository.deleteAll(); // Clear the database (will be rolled back)
-
+        // Ensure database is empty
+        userRepository.deleteAll();
         List<User> users = userService.getAllUsers();
-
         assertTrue(users.isEmpty());
     }
 
-    // --- updateName Tests ---
     @Test
     void updateName_success() {
-        // Arrange: Create a user
-        User user = new User();
-        user.setName("Old Name");
-        user.setEmail("old@example.com");
-        user.setPassword("password");
-        user = userRepository.save(user);
+        UserRegisterRequest registerRequest = new UserRegisterRequest("Old Name", "old@example.com", "password", "");
+        UserRegisterResponse registerResponse = userService.registerUser(registerRequest);
+        assertTrue(registerResponse.getSuccess());
 
-        UpdateNameRequest request = new UpdateNameRequest(user.getUserId(), "New Name");
-
-        boolean result = userService.updateName(request);
-
+        // Update name
+        UpdateNameRequest updateRequest = new UpdateNameRequest(registerResponse.getUserId(), "New Name");
+        boolean result = userService.updateName(updateRequest);
         assertTrue(result);
-        User updatedUser = userRepository.findById(user.getUserId()).orElseThrow();
+
+        // Verify update
+        User updatedUser = userRepository.findById(registerResponse.getUserId()).orElseThrow();
         assertEquals("New Name", updatedUser.getName());
     }
 
     @Test
     void updateName_userNotFound() {
         UpdateNameRequest request = new UpdateNameRequest(999, "New Name");
-
         boolean result = userService.updateName(request);
-
         assertFalse(result);
     }
 
     // --- updateEmail Tests ---
     @Test
     void updateEmail_successNewEmail() {
-        // Arrange: Create a user
-        User user = new User();
-        user.setName("John Doe");
-        user.setEmail("old@example.com");
-        user.setPassword("password");
-        user = userRepository.save(user);
+        UserRegisterRequest registerRequest = new UserRegisterRequest("John Doe", "old@example.com", "password", "");
+        UserRegisterResponse registerResponse = userService.registerUser(registerRequest);
+        assertTrue(registerResponse.getSuccess());
 
-        UpdateEmailRequest request = new UpdateEmailRequest(user.getUserId(), "new@example.com");
-
-        boolean result = userService.updateEmail(request);
-
+        // Update email
+        UpdateEmailRequest updateRequest = new UpdateEmailRequest(registerResponse.getUserId(), "new@example.com");
+        boolean result = userService.updateEmail(updateRequest);
         assertTrue(result);
-        User updatedUser = userRepository.findById(user.getUserId()).orElseThrow();
+
+        // Verify update
+        User updatedUser = userRepository.findById(registerResponse.getUserId()).orElseThrow();
         assertEquals("new@example.com", updatedUser.getEmail());
     }
 
     @Test
     void updateEmail_emailInUseByAnotherUser() {
-        // Arrange: Create two users
-        User user1 = new User();
-        user1.setName("User1");
-        user1.setEmail("user1@example.com");
-        user1.setPassword("password");
-        userRepository.save(user1);
+        // Register first user
+        UserRegisterRequest firstRequest = new UserRegisterRequest("User1", "user1@example.com", "password", "");
+        UserRegisterResponse firstResponse = userService.registerUser(firstRequest);
+        assertTrue(firstResponse.getSuccess());
 
-        User user2 = new User();
-        user2.setName("User2");
-        user2.setEmail("user2@example.com");
-        user2.setPassword("password");
-        userRepository.save(user2);
+        // Register second user
+        UserRegisterRequest secondRequest = new UserRegisterRequest("User2", "user2@example.com", "password", "");
+        UserRegisterResponse secondResponse = userService.registerUser(secondRequest);
+        assertTrue(secondResponse.getSuccess());
 
-        UpdateEmailRequest request = new UpdateEmailRequest(user1.getUserId(), "user2@example.com");
-
-        boolean result = userService.updateEmail(request);
-
+        // Try to update first user's email to second user's email
+        UpdateEmailRequest updateRequest = new UpdateEmailRequest(firstResponse.getUserId(), "user2@example.com");
+        boolean result = userService.updateEmail(updateRequest);
         assertFalse(result);
     }
 
     // --- updatePassword Tests ---
     @Test
     void updatePassword_success() {
-        // Arrange: Create a user
-        User user = new User();
-        user.setName("John Doe");
-        user.setEmail("john@example.com");
-        user.setPassword(passwordEncoder.encode("oldPass"));
-        user = userRepository.save(user);
+        // Register user
+        UserRegisterRequest registerRequest = new UserRegisterRequest("John Doe", "john@example.com", "oldPass", "");
+        UserRegisterResponse registerResponse = userService.registerUser(registerRequest);
+        assertTrue(registerResponse.getSuccess());
 
-        UpdatePasswordRequest request = new UpdatePasswordRequest(user.getUserId(), "oldPass", "newPass");
-
-        boolean result = userService.updatePassword(request);
-
+        // Update password
+        UpdatePasswordRequest updateRequest = new UpdatePasswordRequest(registerResponse.getUserId(), "oldPass", "newPass");
+        boolean result = userService.updatePassword(updateRequest);
         assertTrue(result);
-        User updatedUser = userRepository.findById(user.getUserId()).orElseThrow();
+
+        // Verify update
+        User updatedUser = userRepository.findById(registerResponse.getUserId()).orElseThrow();
         assertTrue(passwordEncoder.matches("newPass", updatedUser.getPassword()));
     }
 
     @Test
     void updatePassword_wrongOldPassword() {
-        // Arrange: Create a user
-        User user = new User();
-        user.setName("John Doe");
-        user.setEmail("john@example.com");
-        user.setPassword(passwordEncoder.encode("oldPass"));
-        userRepository.save(user);
+        // Register user
+        UserRegisterRequest registerRequest = new UserRegisterRequest("John Doe", "john@example.com", "oldPass", "");
+        UserRegisterResponse registerResponse = userService.registerUser(registerRequest);
+        assertTrue(registerResponse.getSuccess());
 
-        UpdatePasswordRequest request = new UpdatePasswordRequest(user.getUserId(), "wrongPass", "newPass");
-
-        boolean result = userService.updatePassword(request);
-
+        // Try to update with wrong old password
+        UpdatePasswordRequest updateRequest = new UpdatePasswordRequest(registerResponse.getUserId(), "wrongPass", "newPass");
+        boolean result = userService.updatePassword(updateRequest);
         assertFalse(result);
     }
 
     // --- makeAdmin Tests ---
     @Test
-    @Transactional
-    public void makeAdmin_noExistingRoles() {
-        // Arrange: Create a user with no roles
-        User user = new User();
-        user.setName("Test User");
-        user.setEmail("test@example.com");
-        user.setPassword("password");
-        user = userRepository.save(user); // Persist the user
+    void makeAdmin_noExistingRoles() {
+        UserRegisterRequest urr = new UserRegisterRequest("Test User", "test@example.com", "password", "");
+        UserRegisterResponse userRegisterResponse = userService.registerUser(urr);
+        assertTrue(userRegisterResponse.getSuccess());
 
-        // Act: Make the user an admin
+        Optional<User> userOptional = userRepository.findById(userRegisterResponse.getUserId());
+        assertTrue(userOptional.isPresent());
+
+        User user = userOptional.get();
         boolean result = userService.makeAdmin(user.getUserId());
         assertTrue(result);
 
-        // Assert: Fetch the updated user from the database
-        User updatedUser = userRepository.findById(user.getUserId()).orElseThrow();
-        assertNotNull(updatedUser.getUserRoles());
+        Optional<User> updatedUserOptional = userRepository.findById(user.getUserId());
+        assertTrue(updatedUserOptional.isPresent());
+
+        User updatedUser = updatedUserOptional.get();
         assertTrue(updatedUser.getUserRoles().getIsAdmin());
     }
 
     @Test
     void makeAdmin_userNotFound() {
         boolean result = userService.makeAdmin(999);
-
         assertFalse(result);
     }
 
     // --- makeMechanic Tests ---
     @Test
-    @Transactional
     public void makeMechanic_existingRoles() {
-        // Arrange: Create a user with existing roles
-        User user = new User();
-        user.setName("Test User");
-        user.setEmail("test@example.com");
-        user.setPassword("password");
-        user = userRepository.save(user); // Persist the user
+        UserRegisterRequest registerRequest = new UserRegisterRequest("Test User", "test@example.com", "password", "");
+        UserRegisterResponse registerResponse = userService.registerUser(registerRequest);
+        assertTrue(registerResponse.getSuccess());
 
-        UserRoles roles = new UserRoles(user.getUserId(), false, false);
-        roles.setUser(user); // Set the back-reference
-        user.setUserRoles(roles); // Set the forward-reference
-        userRepository.save(user); // Persist the user with roles
-
-        // Act: Make the user a mechanic
-        boolean result = userService.makeMechanic(user.getUserId());
+        // Make the user a mechanic
+        boolean result = userService.makeMechanic(registerResponse.getUserId());
         assertTrue(result);
 
-        // Assert: Fetch the updated user from the database
-        User updatedUser = userRepository.findById(user.getUserId()).orElseThrow();
+        // Verify update
+        User updatedUser = userRepository.findById(registerResponse.getUserId()).orElseThrow();
         assertNotNull(updatedUser.getUserRoles());
         assertTrue(updatedUser.getUserRoles().getIsMechanic());
     }
 
     // --- makeRegularUser Tests ---
     @Test
-    @Transactional
     public void makeRegularUser_withRoles() {
-        // Arrange: Create a user with existing roles
-        User user = new User();
-        user.setName("Test User");
-        user.setEmail("test@example.com");
-        user.setPassword("password");
-        user = userRepository.save(user); // Persist the user
+        UserRegisterRequest registerRequest = new UserRegisterRequest("Test User", "test@example.com", "password", "");
+        UserRegisterResponse registerResponse = userService.registerUser(registerRequest);
+        assertTrue(registerResponse.getSuccess());
 
-        UserRoles roles = new UserRoles(user.getUserId(), true, true); // Some existing roles
-        roles.setUser(user); // Set the back-reference
-        user.setUserRoles(roles); // Set the forward-reference
-        userRepository.save(user); // Persist the user with roles
+        // Set roles to true
+        User user = userRepository.findById(registerResponse.getUserId()).orElseThrow();
+        UserRoles roles = user.getUserRoles();
+        roles.setIsAdmin(true);
+        roles.setIsMechanic(true);
+        userRolesRepository.save(roles);
 
-        // Act: Make the user a regular user (e.g., remove special roles)
+        // Make the user a regular user
         boolean result = userService.makeRegularUser(user.getUserId());
         assertTrue(result);
 
-        // Assert: Fetch the updated user from the database
+        // Verify update
         User updatedUser = userRepository.findById(user.getUserId()).orElseThrow();
         assertNotNull(updatedUser.getUserRoles());
         assertFalse(updatedUser.getUserRoles().getIsAdmin());
@@ -324,42 +282,36 @@ public class UserServiceIntegrationTest {
     // --- updateProfilePic Tests ---
     @Test
     void updateProfilePic_success() {
-        // Arrange: Create a user
-        User user = new User();
-        user.setName("John Doe");
-        user.setEmail("john@example.com");
-        user.setPassword("password");
-        user = userRepository.save(user);
+        UserRegisterRequest registerRequest = new UserRegisterRequest("John Doe", "john@example.com", "password", "oldpic.jpg");
+        UserRegisterResponse registerResponse = userService.registerUser(registerRequest);
+        assertTrue(registerResponse.getSuccess());
 
-        UpdateProfilePicRequest request = new UpdateProfilePicRequest(user.getUserId(), "newpic.jpg");
-
-        boolean result = userService.updateProfilePic(request);
-
+        // Update profile picture
+        UpdateProfilePicRequest updateRequest = new UpdateProfilePicRequest(registerResponse.getUserId(), "newpic.jpg");
+        boolean result = userService.updateProfilePic(updateRequest);
         assertTrue(result);
-        User updatedUser = userRepository.findById(user.getUserId()).orElseThrow();
+
+        // Verify update
+        User updatedUser = userRepository.findById(registerResponse.getUserId()).orElseThrow();
         assertEquals("newpic.jpg", updatedUser.getProfilePic());
     }
 
     // --- deleteUser Tests ---
     @Test
     void deleteUser_success() {
-        // Arrange: Create a user
-        User user = new User();
-        user.setName("John Doe");
-        user.setEmail("john@example.com");
-        user.setPassword("password");
-        user = userRepository.save(user);
+        UserRegisterRequest registerRequest = new UserRegisterRequest("John Doe", "john@example.com", "password", "");
+        UserRegisterResponse registerResponse = userService.registerUser(registerRequest);
+        assertTrue(registerResponse.getSuccess());
 
-        boolean result = userService.deleteUser(user.getUserId());
-
+        // Delete user
+        boolean result = userService.deleteUser(registerResponse.getUserId());
         assertTrue(result);
-        assertTrue(userRepository.findById(user.getUserId()).isEmpty());
+        assertTrue(userRepository.findById(registerResponse.getUserId()).isEmpty());
     }
 
     @Test
     void deleteUser_notFound() {
         boolean result = userService.deleteUser(999);
-
         assertFalse(result);
     }
 }

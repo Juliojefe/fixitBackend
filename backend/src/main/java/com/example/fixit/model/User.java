@@ -1,16 +1,7 @@
 package com.example.fixit.model;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -72,9 +63,20 @@ public class User {
     )
     private Set<Post> likedPosts = new HashSet<>();
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Post> ownedPosts = new HashSet<>();
+
     // Getters and setters
     public Integer getUserId() {
         return userId;
+    }
+
+    public void setOwnedPosts(Set<Post> ownedPosts) {
+        this.ownedPosts = ownedPosts;
+    }
+
+    public Set<Post> getOwnedPosts() {
+        return ownedPosts;
     }
 
     public void setUserId(Integer userId) {

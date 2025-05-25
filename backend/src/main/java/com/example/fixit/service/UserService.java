@@ -1,16 +1,20 @@
 package com.example.fixit.service;
 
 import com.example.fixit.dto.*;
+import com.example.fixit.model.Chat;
+import com.example.fixit.model.Post;
 import com.example.fixit.model.User;
 import com.example.fixit.model.UserRoles;
 import com.example.fixit.repository.UserRepository;
 import com.example.fixit.repository.UserRolesRepository;
 import jakarta.transaction.Transactional;
+import java.util.HashSet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 import java.util.Optional;
@@ -28,6 +32,7 @@ public class UserService {
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     //  Emails are unique to a single user.
+    @Transactional
     public UserRegisterResponse registerUser(UserRegisterRequest request) {
         Optional<User> tempUser = userRepository.findByEmail(request.getEmail());
         if (tempUser.isPresent()) {
@@ -39,7 +44,25 @@ public class UserService {
         newUser.setProfilePic(request.getProfilePic());
         newUser.setName(request.getName());
         newUser.setPassword(passwordEncoder.encode(request.getPassword()));
+
+        // Initialize relational fields as empty sets
+        newUser.setChats(new HashSet<Chat>());
+        newUser.setFollowing(new HashSet<User>());
+        newUser.setFollowers(new HashSet<User>());
+        newUser.setSavedPosts(new HashSet<Post>());
+        newUser.setLikedPosts(new HashSet<Post>());
+        newUser.setOwnedPosts(new HashSet<Post>());
+
+        // Create and configure UserRoles
+        UserRoles userRoles = new UserRoles();
+        userRoles.setUser(newUser); // Link UserRoles to User
+        userRoles.setIsAdmin(false); // Default to false
+        userRoles.setIsMechanic(false); // Default to false
+        newUser.setUserRoles(userRoles); // Link User to UserRoles
+
+        // Save the user (cascades to UserRoles)
         userRepository.save(newUser);
+
         logger.info("User with email {} registered successfully", request.getEmail());
         return new UserRegisterResponse(true, newUser.getName(),
                 newUser.getEmail(), newUser.getProfilePic(), newUser.getUserId());
@@ -119,77 +142,41 @@ public class UserService {
         return false;
     }
 
-    @Transactional
     public boolean makeAdmin(int requestUserId) {
-        try {
-            Optional<User> userOptional = userRepository.findById(requestUserId);
-            if (userOptional.isPresent()) {
-                User user = userOptional.get();
-                UserRoles userRoles = user.getUserRoles();
-                if (userRoles == null) {    // Create a new UserRoles if none exists
-                    userRoles = new UserRoles(user.getUserId(), true, false);
-                    user.setUserRoles(userRoles);
-                } else {
-                    userRoles.setIsAdmin(true); // Update existing UserRoles
-                }
-                userRepository.save(user); // Cascades to UserRoles
-                return true;
-            }
-            logger.warn("User with id:{} was not found. Current user: {}", requestUserId);
-            return false;
-        } catch (Exception e) {
-            logger.error("Failed to make user {} an admin: {}", requestUserId, e.getMessage(), e);
-            return false;
+        Optional<User> user = userRepository.findById(requestUserId);
+        if (user.isPresent()) {
+            User tempUser = user.get();
+            tempUser.getUserRoles().setIsAdmin(true);
+            userRepository.save(tempUser);
+            return true;
         }
+        logger.warn("User with id:{} was not found", requestUserId);
+        return false;
     }
 
-    @Transactional
     public boolean makeMechanic(int requestUserId) {
-        try {
-            Optional<User> userOptional = userRepository.findById(requestUserId);
-            if (userOptional.isPresent()) {
-                User user = userOptional.get();
-                UserRoles userRoles = user.getUserRoles();
-                if (userRoles == null) {    // Create a new UserRoles if none exists
-                    userRoles = new UserRoles(user.getUserId(), false, true);
-                    user.setUserRoles(userRoles);
-                } else {
-                    userRoles.setIsMechanic(true); // Update existing UserRoles
-                }
-                userRepository.save(user); // Cascades to UserRoles
-                return true;
-            }
-            logger.warn("User with id:{} was not found. Current user: {}", requestUserId);
-            return false;
-        } catch (Exception e) {
-            logger.error("Failed to make user {} an admin: {}", requestUserId, e.getMessage(), e);
-            return false;
+        Optional<User> user = userRepository.findById(requestUserId);
+        if (user.isPresent()) {
+            User tempUser = user.get();
+            tempUser.getUserRoles().setIsMechanic(true);
+            userRepository.save(tempUser);
+            return true;
         }
+        logger.warn("User with id:{} was not found", requestUserId);
+        return false;
     }
 
-    @Transactional
     public boolean makeRegularUser(int requestUserId) {
-        try {
-            Optional<User> userOptional = userRepository.findById(requestUserId);
-            if (userOptional.isPresent()) {
-                User user = userOptional.get();
-                UserRoles userRoles = user.getUserRoles();
-                if (userRoles == null) {    // Create a new UserRoles if none exists
-                    userRoles = new UserRoles(user.getUserId(), false, false);
-                    user.setUserRoles(userRoles);
-                } else {
-                    userRoles.setIsAdmin(false); // Update existing UserRoles
-                    userRoles.setIsMechanic(false);
-                }
-                userRepository.save(user); // Cascades to UserRoles
-                return true;
-            }
-            logger.warn("User with id:{} was not found. Current user: {}", requestUserId);
-            return false;
-        } catch (Exception e) {
-            logger.error("Failed to make user {} an admin: {}", requestUserId, e.getMessage(), e);
-            return false;
+        Optional<User> user = userRepository.findById(requestUserId);
+        if (user.isPresent()) {
+            User tempUser = user.get();
+            tempUser.getUserRoles().setIsMechanic(false);
+            tempUser.getUserRoles().setIsAdmin(false);
+            userRepository.save(tempUser);
+            return true;
         }
+        logger.warn("User with id:{} was not found", requestUserId);
+        return false;
     }
 
     public boolean updateProfilePic(UpdateProfilePicRequest request) {
