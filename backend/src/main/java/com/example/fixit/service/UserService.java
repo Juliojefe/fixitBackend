@@ -14,9 +14,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -37,12 +37,12 @@ public class UserService {
         Optional<User> tempUser = userRepository.findByEmail(request.getEmail());
         if (tempUser.isPresent()) {
             logger.warn("Registration failed: User with email {} already exists", request.getEmail());
-            return new UserRegisterResponse(false, "", "", "", -1);
+            return new UserRegisterResponse(false, "email already exists", "", "", -1, false);
         }
 
         if (!isValidPassword(request.getPassword())) {
             logger.warn("Registration failed: Invalid password for email {}", request.getEmail());
-            return new UserRegisterResponse(false, "", "", "", -1);
+            return new UserRegisterResponse(false, "invalid password", "", "", -1, false);
         }
 
         User newUser = new User();
@@ -50,6 +50,7 @@ public class UserService {
         newUser.setProfilePic(request.getProfilePic());
         newUser.setName(request.getName());
         newUser.setPassword(passwordEncoder.encode(request.getPassword()));
+        newUser.setGoogleId(null);
 
         // Initialize relational fields as empty sets
         newUser.setChats(new HashSet<Chat>());
@@ -71,7 +72,44 @@ public class UserService {
 
         logger.info("User with email {} registered successfully", request.getEmail());
         return new UserRegisterResponse(true, newUser.getName(),
-                newUser.getEmail(), newUser.getProfilePic(), newUser.getUserId());
+                newUser.getEmail(), newUser.getProfilePic(), newUser.getUserId(), false);
+    }
+
+    @Transactional
+    public UserRegisterResponse registerUserWithGoogle(String googleId, String email, String name, String profilePic) {
+        Optional<User> tempUser = userRepository.findByEmail(email);
+        if (tempUser.isPresent()) {
+            logger.warn("Registration failed: User with email {} already exists", email);
+            return new UserRegisterResponse(false, "email already exists", "", "", -1, false);
+        }
+
+        User newUser = new User();
+        newUser.setEmail(email);
+        newUser.setProfilePic(profilePic);
+        newUser.setName(name);
+        newUser.setPassword(null); // No password for Google users
+        newUser.setGoogleId(googleId);
+
+        // Initialize relational fields as empty sets
+        newUser.setChats(new HashSet<Chat>());
+        newUser.setFollowing(new HashSet<User>());
+        newUser.setFollowers(new HashSet<User>());
+        newUser.setSavedPosts(new HashSet<Post>());
+        newUser.setLikedPosts(new HashSet<Post>());
+        newUser.setOwnedPosts(new HashSet<Post>());
+
+        // Create and configure UserRoles
+        UserRoles userRoles = new UserRoles();
+        userRoles.setUser(newUser);
+        userRoles.setIsAdmin(false);
+        userRoles.setIsMechanic(false);
+        newUser.setUserRoles(userRoles);
+
+        // Save the user (cascades to UserRoles)
+        userRepository.save(newUser);
+        logger.info("User with email {} registered successfully via Google", email);
+        return new UserRegisterResponse(true, newUser.getName(), newUser.getEmail(),
+                newUser.getProfilePic(), newUser.getUserId(), true);
     }
 
     public boolean isValidPassword(String password) {
@@ -87,11 +125,20 @@ public class UserService {
         if (tempUser.isPresent() && passwordEncoder.matches(request.getPassword(), tempUser.get().getPassword())) {
             logger.info("User with email {} logged in successfully", request.getEmail());
             User user = tempUser.get();
-            return new UserLoginResponse(true, user.getName(), user.getEmail(), user.getProfilePic(), user.getUserId());
+            return new UserLoginResponse(true, user.getName(), user.getEmail(), user.getProfilePic(), user.getUserId(), false);
         } else {
             logger.warn("Authentication failed for email {}: Incorrect email or password", request.getEmail());
-            return new UserLoginResponse(false, "", "", "", -1);
+            return new UserLoginResponse(false, "", "", "", -1, false);
         }
+    }
+
+    public UserLoginResponse loginUserWithGoogle(String googleId)  {
+        Optional<User> tempUser = userRepository.findByGoogleId(googleId);
+        if (tempUser.isPresent()) {
+            User user = tempUser.get();
+            return new UserLoginResponse(true, user.getName(), user.getProfilePic(), user.getEmail(), user.getUserId(), true);
+        }
+        return new UserLoginResponse(false, "Google user not found, please register first", "", "", -1, false);
     }
 
     //  For admins only
@@ -118,7 +165,7 @@ public class UserService {
         if (idUser.isPresent() && emailUser.isPresent()) {
             User numUser = idUser.get();
             User strUser = emailUser.get();
-            if (numUser.getUserId() != strUser.getUserId()) {
+            if (!Objects.equals(numUser.getUserId(), strUser.getUserId())) {
                 logger.warn("email in use");
                 return false;
             }
@@ -142,6 +189,10 @@ public class UserService {
         Optional<User> user = userRepository.findById(request.getUserId());
         if (user.isPresent()) {
             User tempUser = user.get();
+            if (tempUser.getPassword() == null && tempUser.getGoogleId() != null) {
+                logger.warn("Password update failed: google users blocked");
+                return false;
+            }
             String oldPassword = request.getOldPassword();
             String storedHashedPassword = tempUser.getPassword();
             String newPassword = request.getNewPassword();

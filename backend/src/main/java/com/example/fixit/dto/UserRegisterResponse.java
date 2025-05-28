@@ -6,13 +6,15 @@ public class UserRegisterResponse {
     private String email;
     private String profilePic;
     private int userId;
+    private boolean isGoogle;
 
-    public UserRegisterResponse (boolean success, String name, String email, String profilePic, int userId) {
+    public UserRegisterResponse (boolean success, String name, String email, String profilePic, int userId, boolean isGoogle) {
         this.success = success;
         this.name = name;
         this.email = email;
         this.profilePic = profilePic;
         this.userId = userId;
+        this.isGoogle = isGoogle;
     }
 
     public String getName() {
