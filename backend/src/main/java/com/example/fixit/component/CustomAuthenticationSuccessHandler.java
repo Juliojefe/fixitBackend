@@ -35,7 +35,7 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         String name = oauthUser.getAttribute("name");
         String profilePic = oauthUser.getAttribute("picture");
 
-        if (email == null || name == null) {
+        if (email == null || name == null || googleId == null) {
             throw new IllegalArgumentException("Missing required attributes: email and/or name");
         }
 
