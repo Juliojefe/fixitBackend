@@ -8,6 +8,8 @@ public class UserRegisterResponse {
     private int userId;
     private boolean isGoogle;
 
+    public UserRegisterResponse() {}
+
     public UserRegisterResponse (boolean success, String name, String email, String profilePic, int userId, boolean isGoogle) {
         this.success = success;
         this.name = name;
@@ -15,6 +17,18 @@ public class UserRegisterResponse {
         this.profilePic = profilePic;
         this.userId = userId;
         this.isGoogle = isGoogle;
+    }
+
+    public boolean isSuccess() {
+        return success;
+    }
+
+    public boolean isGoogle() {
+        return isGoogle;
+    }
+
+    public void setGoogle(boolean google) {
+        isGoogle = google;
     }
 
     public String getName() {

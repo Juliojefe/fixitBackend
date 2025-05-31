@@ -20,9 +20,19 @@ public class UserController {
         return userService.registerUser(request);
     }
 
+    @PatchMapping("register/google/")
+    public UserRegisterResponse googleRegister(@RequestBody GoogleUserRegisterRequest request) {
+        return userService.registerUserWithGoogle(request);
+    }
+
     @PostMapping("/login")
     public UserLoginResponse loginUser(@RequestBody UserLoginRequest request) {
         return userService.loginUser(request);
+    }
+
+    @PostMapping("login/google/")
+    public UserLoginResponse loginUserGoogle(@RequestBody String googleId) {
+        return userService.loginUserWithGoogle(googleId);
     }
 
     @GetMapping("/")

@@ -76,19 +76,19 @@ public class UserService {
     }
 
     @Transactional
-    public UserRegisterResponse registerUserWithGoogle(String googleId, String email, String name, String profilePic) {
-        Optional<User> tempUser = userRepository.findByEmail(email);
+    public UserRegisterResponse registerUserWithGoogle(GoogleUserRegisterRequest request) {
+        Optional<User> tempUser = userRepository.findByEmail(request.getEmail());
         if (tempUser.isPresent()) {
-            logger.warn("Registration failed: User with email {} already exists", email);
+            logger.warn("Registration failed: User with email {} already exists", request.getEmail());
             return new UserRegisterResponse(false, "email already exists", "", "", -1, false);
         }
 
         User newUser = new User();
-        newUser.setEmail(email);
-        newUser.setProfilePic(profilePic);
-        newUser.setName(name);
+        newUser.setEmail(request.getEmail());
+        newUser.setProfilePic(request.getProfilePic());
+        newUser.setName(request.getName());
         newUser.setPassword(null); // No password for Google users
-        newUser.setGoogleId(googleId);
+        newUser.setGoogleId(request.getGoogleId());
 
         // Initialize relational fields as empty sets
         newUser.setChats(new HashSet<Chat>());
@@ -107,7 +107,7 @@ public class UserService {
 
         // Save the user (cascades to UserRoles)
         userRepository.save(newUser);
-        logger.info("User with email {} registered successfully via Google", email);
+        logger.info("User with email {} registered successfully via Google", request.getEmail());
         return new UserRegisterResponse(true, newUser.getName(), newUser.getEmail(),
                 newUser.getProfilePic(), newUser.getUserId(), true);
     }
@@ -136,7 +136,7 @@ public class UserService {
         Optional<User> tempUser = userRepository.findByGoogleId(googleId);
         if (tempUser.isPresent()) {
             User user = tempUser.get();
-            return new UserLoginResponse(true, user.getName(), user.getProfilePic(), user.getEmail(), user.getUserId(), true);
+            return new UserLoginResponse(true, user.getName(), user.getEmail(), user.getProfilePic(), user.getUserId(), true);
         }
         return new UserLoginResponse(false, "Google user not found, please register first", "", "", -1, false);
     }

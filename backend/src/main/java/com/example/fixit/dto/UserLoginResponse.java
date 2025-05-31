@@ -8,6 +8,8 @@ public class UserLoginResponse {
     private int userId;
     private boolean isGoogle;
 
+    public UserLoginResponse() {}
+
     public UserLoginResponse (boolean success, String name, String email, String profilePic, int userId, boolean isGoogle) {
         this.success = success;
         this.name = name;
