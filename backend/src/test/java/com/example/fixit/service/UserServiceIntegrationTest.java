@@ -1,4 +1,4 @@
-package com.example.fixit;
+package com.example.fixit.service;
 
 import com.example.fixit.dto.*;
 import com.example.fixit.model.User;
@@ -6,7 +6,6 @@ import com.example.fixit.model.UserRoles;
 import com.example.fixit.dto.UserRegisterRequest;
 import com.example.fixit.repository.UserRepository;
 import com.example.fixit.repository.UserRolesRepository;
-import com.example.fixit.service.UserService;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

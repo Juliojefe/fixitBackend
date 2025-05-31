@@ -19,7 +19,7 @@ public class User {
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
-    @Column(name = "password", nullable = false)
+    @Column(name = "password")
     private String password;
 
     @Column(name = "profile_pic")
@@ -27,6 +27,9 @@ public class User {
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private UserRoles userRoles;
+
+    @Column(name = "google_id")
+    private String googleId;
 
     @ManyToMany
     @JoinTable(
@@ -69,6 +72,14 @@ public class User {
     // Getters and setters
     public Integer getUserId() {
         return userId;
+    }
+
+    public String getGoogleId() {
+        return googleId;
+    }
+
+    public void setGoogleId(String googleId) {
+        this.googleId = googleId;
     }
 
     public void setOwnedPosts(Set<Post> ownedPosts) {
