@@ -1,6 +1,7 @@
 package com.example.fixit.model;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "user_roles")
@@ -11,6 +12,7 @@ public class UserRoles {
     @MapsId
     @OneToOne
     @JoinColumn(name = "user_id")
+    @JsonIgnore
     private User user;
 
     @Column(name = "isadmin", nullable = false)

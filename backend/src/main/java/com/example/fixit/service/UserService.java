@@ -37,15 +37,29 @@ public class UserService {
         try {
             Optional<User> tempUser = userRepository.findByEmail(request.getEmail());
             if (tempUser.isPresent()) {
-                logger.warn("Registration failed: User with email {} already exists", request.getEmail());
-                return new UserRegisterResponse(false, "email already exists", "", "", -1, false);
+                return new UserRegisterResponse(false, "Email already in use", "", "", -1, false);
             }
 
             if (!isValidPassword(request.getPassword())) {
-                logger.warn("Registration failed: Invalid password for email {}", request.getEmail());
-                return new UserRegisterResponse(false, "invalid password", "", "", -1, false);
+                return new UserRegisterResponse(
+                        false,
+                        "Invalid password:\n• At least 8 characters long\n• At least one uppercase letter\n• At least one lowercase letter\n• At least one number\n• At least one special character",
+                        "",
+                        "",
+                        -1,
+                        false
+                );
             }
 
+            if (!request.getEmail().contains("@") || request.getEmail().length() < 4) {
+                return new UserRegisterResponse(false, "Invalid email", "", "", -1, false);
+            }
+
+            String[] name = request.getName().split(" ");
+            if (name.length != 2 || name[0].length() < 2 || name[1].length() < 2) {
+                return new UserRegisterResponse(false, "Invalid first or last name", "", "", -1, false);
+            }
+            
             User newUser = new User();
             newUser.setEmail(request.getEmail());
             newUser.setProfilePic(request.getProfilePic());
@@ -85,7 +99,16 @@ public class UserService {
             Optional<User> tempUser = userRepository.findByEmail(request.getEmail());
             if (tempUser.isPresent()) {
                 logger.warn("Registration failed: User with email {} already exists", request.getEmail());
-                return new UserRegisterResponse(false, "email already exists", "", "", -1, false);
+                return new UserRegisterResponse(false, "Email already in use", "", "", -1, false);
+            }
+
+            if (!request.getEmail().contains("@") || request.getEmail().length() < 4) {
+                return new UserRegisterResponse(false, "Invalid email", "", "", -1, false);
+            }
+
+            String[] name = request.getName().split(" ");
+            if (name.length != 2 || name[0].length() < 2 || name[1].length() < 2) {
+                return new UserRegisterResponse(false, "Invalid first or last name", "", "", -1, false);
             }
 
             User newUser = new User();
