@@ -35,7 +35,7 @@ public class UserService {
     @Transactional
     public UserRegisterResponse registerUser(UserRegisterRequest request) {
         try {
-            Optional<User> tempUser = userRepository.findByEmail(request.getEmail());
+            Optional<User> tempUser = userRepository.findByEmail(request.getEmail().trim());
             if (tempUser.isPresent()) {
                 return new UserRegisterResponse(false, "Email already in use", "", "", -1, false);
             }
@@ -51,20 +51,20 @@ public class UserService {
                 );
             }
 
-            if (!request.getEmail().contains("@") || request.getEmail().length() < 4) {
+            if (!request.getEmail().trim().contains("@") || request.getEmail().trim().length() < 4) {
                 return new UserRegisterResponse(false, "Invalid email", "", "", -1, false);
             }
 
-            String[] name = request.getName().split(" ");
+            String[] name = request.getName().trim().split("\\s+");
             if (name.length != 2 || name[0].length() < 2 || name[1].length() < 2) {
                 return new UserRegisterResponse(false, "Invalid first or last name", "", "", -1, false);
             }
             
             User newUser = new User();
-            newUser.setEmail(request.getEmail());
-            newUser.setProfilePic(request.getProfilePic());
-            newUser.setName(request.getName());
-            newUser.setPassword(passwordEncoder.encode(request.getPassword()));
+            newUser.setEmail(request.getEmail().trim());
+            newUser.setProfilePic(request.getProfilePic().trim());
+            newUser.setName(request.getName().trim());
+            newUser.setPassword(passwordEncoder.encode(request.getPassword()).trim());
             newUser.setGoogleId(null);
 
             // Initialize relational fields as empty sets
@@ -96,27 +96,27 @@ public class UserService {
     @Transactional
     public UserRegisterResponse registerUserWithGoogle(GoogleUserRegisterRequest request) {
         try {
-            Optional<User> tempUser = userRepository.findByEmail(request.getEmail());
+            Optional<User> tempUser = userRepository.findByEmail(request.getEmail().trim());
             if (tempUser.isPresent()) {
                 logger.warn("Registration failed: User with email {} already exists", request.getEmail());
                 return new UserRegisterResponse(false, "Email already in use", "", "", -1, false);
             }
 
-            if (!request.getEmail().contains("@") || request.getEmail().length() < 4) {
+            if (!request.getEmail().trim().contains("@") || request.getEmail().trim().length() < 4) {
                 return new UserRegisterResponse(false, "Invalid email", "", "", -1, false);
             }
 
-            String[] name = request.getName().split(" ");
+            String[] name = request.getName().trim().split("\\s+");
             if (name.length != 2 || name[0].length() < 2 || name[1].length() < 2) {
                 return new UserRegisterResponse(false, "Invalid first or last name", "", "", -1, false);
             }
 
             User newUser = new User();
-            newUser.setEmail(request.getEmail());
-            newUser.setProfilePic(request.getProfilePic());
-            newUser.setName(request.getName());
+            newUser.setEmail(request.getEmail().trim());
+            newUser.setProfilePic(request.getProfilePic().trim());
+            newUser.setName(request.getName().trim());
             newUser.setPassword(null); // No password for Google users
-            newUser.setGoogleId(request.getGoogleId());
+            newUser.setGoogleId(request.getGoogleId().trim());
 
             // Initialize relational fields as empty sets
             newUser.setChats(new HashSet<Chat>());
@@ -157,7 +157,7 @@ public class UserService {
 
     public UserLoginResponse loginUser(UserLoginRequest request) {
         try {
-            Optional<User> tempUser = userRepository.findByEmail(request.getEmail());
+            Optional<User> tempUser = userRepository.findByEmail(request.getEmail().trim());
             if (tempUser.isPresent() && passwordEncoder.matches(request.getPassword(), tempUser.get().getPassword())) {
                 logger.info("User with email {} logged in successfully", request.getEmail());
                 User user = tempUser.get();
@@ -173,7 +173,7 @@ public class UserService {
 
     public UserLoginResponse loginUserWithGoogle(String googleId) {
         try {
-            Optional<User> tempUser = userRepository.findByGoogleId(googleId);
+            Optional<User> tempUser = userRepository.findByGoogleId(googleId.trim());
             if (tempUser.isPresent()) {
                 User user = tempUser.get();
                 return new UserLoginResponse(true, user.getName(), user.getEmail(), user.getProfilePic(), user.getUserId(), true);
@@ -198,7 +198,7 @@ public class UserService {
             Optional<User> user = userRepository.findById(request.getUserId());
             if (user.isPresent()) {
                 User tempUser = user.get();
-                tempUser.setName(request.getName());
+                tempUser.setName(request.getName().trim());
                 userRepository.save(tempUser);
                 logger.info("User name updated logged successfully");
                 return true;
@@ -213,7 +213,7 @@ public class UserService {
     public boolean updateEmail(UpdateEmailRequest request) {
         try {
             Optional<User> idUser = userRepository.findById(request.getUserId());
-            Optional<User> emailUser = userRepository.findByEmail(request.getEmail());
+            Optional<User> emailUser = userRepository.findByEmail(request.getEmail().trim());
             if (idUser.isPresent() && emailUser.isPresent()) {
                 User numUser = idUser.get();
                 User strUser = emailUser.get();
@@ -221,10 +221,8 @@ public class UserService {
                     logger.warn("email in use");
                     return false;
                 }
-                numUser.setEmail(request.getEmail());
-                userRepository.save(numUser);
-                logger.info("email update successfully");
-                return true;
+                logger.info("no need to update, user is already using that email");
+                return false;
             }
             if (idUser.isPresent()) {
                 User tempUser = idUser.get();
@@ -249,15 +247,15 @@ public class UserService {
                     logger.warn("Password update failed: google users blocked");
                     return false;
                 }
-                String oldPassword = request.getOldPassword();
-                String storedHashedPassword = tempUser.getPassword();
-                String newPassword = request.getNewPassword();
+                String oldPassword = request.getOldPassword().trim();
+                String storedHashedPassword = tempUser.getPassword().trim();
+                String newPassword = request.getNewPassword().trim();
                 if (passwordEncoder.matches(oldPassword, storedHashedPassword)) {
                     if (!isValidPassword(newPassword)) {
                         logger.warn("Password update failed: Invalid new password for user id {}", request.getUserId());
                         return false;
                     }
-                    tempUser.setPassword(passwordEncoder.encode(newPassword));
+                    tempUser.setPassword(passwordEncoder.encode(newPassword).trim());
                     userRepository.save(tempUser);
                     logger.info("password update successfully");
                     return true;
