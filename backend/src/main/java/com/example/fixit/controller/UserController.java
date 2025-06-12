@@ -20,7 +20,7 @@ public class UserController {
         return userService.registerUser(request);
     }
 
-    @PatchMapping("register/google/")
+    @PatchMapping("/register/google/")
     public UserRegisterResponse googleRegister(@RequestBody GoogleUserRegisterRequest request) {
         return userService.registerUserWithGoogle(request);
     }
@@ -30,7 +30,7 @@ public class UserController {
         return userService.loginUser(request);
     }
 
-    @PostMapping("login/google/")
+    @PostMapping("/login/google/")
     public UserLoginResponse loginUserGoogle(@RequestBody String googleId) {
         return userService.loginUserWithGoogle(googleId);
     }
@@ -45,32 +45,32 @@ public class UserController {
         return userService.updateName(request);
     }
 
-    @PatchMapping("update-email/{id}/email")
+    @PatchMapping("/update-email/{id}/email")
     public boolean updateEmail(@RequestBody UpdateEmailRequest request) {
         return userService.updateEmail(request);
     }
 
-    @PatchMapping("update-password/{id}/password")
+    @PatchMapping("/update-password/{id}/password")
     public boolean updatePassword(@RequestBody UpdatePasswordRequest request) {
         return userService.updatePassword(request);
     }
 
-    @PatchMapping("make-admin/{id}")
+    @PatchMapping("/make-admin/{id}")
     public boolean makeAdmin(@RequestBody int requestUserId) {
         return userService.makeAdmin(requestUserId);
     }
 
-    @PatchMapping("make-mechanic/{id}")
+    @PatchMapping("/make-mechanic/{id}")
     public boolean makeMechanic(@RequestBody int requestUserId) {
         return userService.makeMechanic(requestUserId);
     }
 
-    @PatchMapping("make-regular-user/{id}")
+    @PatchMapping("/make-regular-user/{id}")
     public boolean makeRegularUser(@RequestBody int requestUserId) {
         return userService.makeRegularUser(requestUserId);
     }
 
-    @PatchMapping("update-profile-pic/{id}/url-new-pic")
+    @PatchMapping("/update-profile-pic/{id}/url-new-pic")
     public boolean updateProfilePic(@RequestBody UpdateProfilePicRequest request) {
         return userService.updateProfilePic(request);
     }

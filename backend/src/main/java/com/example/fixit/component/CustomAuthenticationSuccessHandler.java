@@ -4,7 +4,6 @@ import com.example.fixit.dto.GoogleUserRegisterRequest;
 import com.example.fixit.dto.UserLoginResponse;
 import com.example.fixit.dto.UserRegisterResponse;
 import com.example.fixit.service.UserService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +14,8 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @Component
 public class CustomAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
@@ -25,12 +26,10 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                         Authentication authentication) throws IOException {
-        // Cast to OAuth2AuthenticationToken to get Google user details
         OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
         OAuth2User oauthUser = oauthToken.getPrincipal();
 
-        // Extract user details from Google's ID token
-        String googleId = oauthUser.getAttribute("sub"); // This is the googleId
+        String googleId = oauthUser.getAttribute("sub");
         String email = oauthUser.getAttribute("email");
         String name = oauthUser.getAttribute("name");
         String profilePic = oauthUser.getAttribute("picture");
@@ -39,13 +38,10 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
             throw new IllegalArgumentException("Missing required attributes: email and/or name");
         }
 
-        // Check if the user exists by googleId
         UserLoginResponse loginResponse = userService.loginUserWithGoogle(googleId);
         if (loginResponse.isSuccess()) {
-            // User exists, log them in
             writeResponse(response, loginResponse);
         } else {
-            // User doesn’t exist, register them
             GoogleUserRegisterRequest registerRequest = new GoogleUserRegisterRequest(googleId, email, name, profilePic);
             UserRegisterResponse registerResponse = userService.registerUserWithGoogle(registerRequest);
             writeResponse(response, registerResponse);
@@ -53,8 +49,32 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
     }
 
     private void writeResponse(HttpServletResponse response, Object data) throws IOException {
-        response.setContentType("application/json");
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.writeValue(response.getWriter(), data);
+        String baseUrl = "http://localhost:3000/auth-callback";
+        String redirectUrl;
+
+        if (data instanceof UserLoginResponse) {
+            UserLoginResponse loginResponse = (UserLoginResponse) data;
+            redirectUrl = String.format("%s?success=%b&userId=%d&name=%s&email=%s&profilePic=%s&isGoogle=%b",
+                    baseUrl,
+                    loginResponse.isSuccess(),
+                    loginResponse.getUserId(),
+                    URLEncoder.encode(loginResponse.getName(), StandardCharsets.UTF_8),
+                    URLEncoder.encode(loginResponse.getEmail(), StandardCharsets.UTF_8),
+                    URLEncoder.encode(loginResponse.getProfilePic() != null ? loginResponse.getProfilePic() : "", StandardCharsets.UTF_8),
+                    loginResponse.isGoogle());
+        } else if (data instanceof UserRegisterResponse) {
+            UserRegisterResponse registerResponse = (UserRegisterResponse) data;
+            redirectUrl = String.format("%s?success=%b&userId=%d&name=%s&email=%s&profilePic=%s&isGoogle=%b",
+                    baseUrl,
+                    registerResponse.isSuccess(),
+                    registerResponse.getUserId(),
+                    URLEncoder.encode(registerResponse.getName(), StandardCharsets.UTF_8),
+                    URLEncoder.encode(registerResponse.getEmail(), StandardCharsets.UTF_8),
+                    URLEncoder.encode(registerResponse.getProfilePic() != null ? registerResponse.getProfilePic() : "", StandardCharsets.UTF_8),
+                    registerResponse.isGoogle());
+        } else {
+            throw new IllegalArgumentException("Unsupported response type");
+        }
+        response.sendRedirect(redirectUrl);
     }
 }
