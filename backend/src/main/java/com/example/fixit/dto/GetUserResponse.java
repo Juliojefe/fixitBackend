@@ -4,19 +4,21 @@ import com.example.fixit.model.Chat;
 import com.example.fixit.model.Post;
 import com.example.fixit.model.User;
 import com.example.fixit.model.UserRoles;
+import java.util.HashSet;
+import java.util.Set;
 
 import java.util.List;
 
 public class GetUserResponse {
     private UserRoles userRoles;
-    private List<Chat> chats;
-    private List<User> following;
-    private List<User> followers;
-    private List<Post> savedPosts;
-    private List<Post> likedPosts;
-    private List<Post> ownedPosts;
+    private Set<Chat> chats;
+    private Set<User> following;
+    private Set<User> followers;
+    private Set<Post> savedPosts;
+    private Set<Post> likedPosts;
+    private Set<Post> ownedPosts;
 
-    public GetUserResponse(UserRoles userRoles, List<Chat> chats, List<User> following, List<User> followers, List<Post> savedPosts, List<Post> likedPosts, List<Post> ownedPosts) {
+    public GetUserResponse(UserRoles userRoles, Set<Chat> chats, Set<User> following, Set<User> followers, Set<Post> savedPosts, Set<Post> likedPosts, Set<Post> ownedPosts) {
         this.userRoles = userRoles;
         this.chats = chats;
         this.following = following;
@@ -34,51 +36,51 @@ public class GetUserResponse {
         this.userRoles = userRoles;
     }
 
-    public List<Chat> getChats() {
+    public Set<Chat> getChats() {
         return chats;
     }
 
-    public void setChats(List<Chat> chats) {
+    public void setChats(Set<Chat> chats) {
         this.chats = chats;
     }
 
-    public List<User> getFollowing() {
+    public Set<User> getFollowing() {
         return following;
     }
 
-    public void setFollowing(List<User> following) {
+    public void setFollowing(Set<User> following) {
         this.following = following;
     }
 
-    public List<User> getFollowers() {
+    public Set<User> getFollowers() {
         return followers;
     }
 
-    public void setFollowers(List<User> followers) {
+    public void setFollowers(Set<User> followers) {
         this.followers = followers;
     }
 
-    public List<Post> getSavedPosts() {
+    public Set<Post> getSavedPosts() {
         return savedPosts;
     }
 
-    public void setSavedPosts(List<Post> savedPosts) {
+    public void setSavedPosts(Set<Post> savedPosts) {
         this.savedPosts = savedPosts;
     }
 
-    public List<Post> getLikedPosts() {
+    public Set<Post> getLikedPosts() {
         return likedPosts;
     }
 
-    public void setLikedPosts(List<Post> likedPosts) {
+    public void setLikedPosts(Set<Post> likedPosts) {
         this.likedPosts = likedPosts;
     }
 
-    public List<Post> getOwnedPosts() {
+    public Set<Post> getOwnedPosts() {
         return ownedPosts;
     }
 
-    public void setOwnedPosts(List<Post> ownedPosts) {
+    public void setOwnedPosts(Set<Post> ownedPosts) {
         this.ownedPosts = ownedPosts;
     }
 }

@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @RestController
 @RequestMapping("api/user")
@@ -36,10 +38,15 @@ public class UserController {
     }
 
     @GetMapping("/")
-    public List<User> getAllUsers() {
+    public List<GetUserResponse> getAllUsers() {
         return userService.getAllUsers();
     }
 
+    @GetMapping("/{id}")
+    public GetUserResponse getuserById(@PathVariable("id") int userId) {
+        return userService.getuserById(userId);
+    }   
+    
     @PatchMapping("/update-name/{id}/name")
     public boolean updateUserName(@RequestBody UpdateNameRequest request) {
         return userService.updateName(request);

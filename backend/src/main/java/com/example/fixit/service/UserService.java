@@ -8,14 +8,15 @@ import com.example.fixit.model.UserRoles;
 import com.example.fixit.repository.UserRepository;
 import com.example.fixit.repository.UserRolesRepository;
 import jakarta.transaction.Transactional;
-import java.util.HashSet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import java.util.HashSet;
+import java.util.Set;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -185,9 +186,31 @@ public class UserService {
     }
 
     //  For admins only
-    public List<User> getAllUsers() {
+    public List<GetUserResponse> getAllUsers() {
         try {
-            return userRepository.findAll();
+            List<User> allUsers = userRepository.findAll();
+            List<GetUserResponse> response = new ArrayList<>();
+            for(User u : allUsers) {
+                GetUserResponse gur = new GetUserResponse(u.getUserRoles(), u.getChats(), u.getFollowing(), u.getFollowers(),
+                                        u.getSavedPosts(), u.getLikedPosts(), u.getOwnedPosts());
+                response.add(gur);
+            }
+            return response;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public GetUserResponse getuserById(int userId) {
+        try {
+            Optional<User> OptUser = userRepository.findById(userId);
+            if (OptUser.isPresent()) {
+                User u = OptUser.get();
+                return new GetUserResponse(u.getUserRoles(), u.getChats(), u.getFollowing(), u.getFollowers(),
+                                            u.getSavedPosts(), u.getLikedPosts(), u.getOwnedPosts());
+            } else {
+                return new GetUserResponse(null, null, null, null, null, null, null);
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
