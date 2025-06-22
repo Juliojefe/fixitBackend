@@ -12,13 +12,15 @@ import java.util.List;
 public class GetUserResponse {
     private UserRoles userRoles;
     private Set<Chat> chats;
-    private Set<User> following;
-    private Set<User> followers;
+    private Set<UserSummary> following;
+    private Set<UserSummary> followers;
     private Set<Post> savedPosts;
     private Set<Post> likedPosts;
     private Set<Post> ownedPosts;
 
-    public GetUserResponse(UserRoles userRoles, Set<Chat> chats, Set<User> following, Set<User> followers, Set<Post> savedPosts, Set<Post> likedPosts, Set<Post> ownedPosts) {
+    public GetUserResponse() {}
+
+    public GetUserResponse(UserRoles userRoles, Set<Chat> chats, Set<UserSummary> following, Set<UserSummary> followers, Set<Post> savedPosts, Set<Post> likedPosts, Set<Post> ownedPosts) {
         this.userRoles = userRoles;
         this.chats = chats;
         this.following = following;
@@ -44,19 +46,19 @@ public class GetUserResponse {
         this.chats = chats;
     }
 
-    public Set<User> getFollowing() {
+    public Set<UserSummary> getFollowing() {
         return following;
     }
 
-    public void setFollowing(Set<User> following) {
+    public void setFollowing(Set<UserSummary> following) {
         this.following = following;
     }
 
-    public Set<User> getFollowers() {
+    public Set<UserSummary> getFollowers() {
         return followers;
     }
 
-    public void setFollowers(Set<User> followers) {
+    public void setFollowers(Set<UserSummary> followers) {
         this.followers = followers;
     }
 

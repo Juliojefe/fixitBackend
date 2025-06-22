@@ -45,7 +45,7 @@ public class UserController {
     @GetMapping("/{id}")
     public GetUserResponse getuserById(@PathVariable("id") int userId) {
         return userService.getuserById(userId);
-    }   
+    }
     
     @PatchMapping("/update-name/{id}/name")
     public boolean updateUserName(@RequestBody UpdateNameRequest request) {
