@@ -2,7 +2,7 @@ package com.example.fixit.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import java.security.Timestamp;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -23,7 +23,7 @@ public class Post {
     private User user;
 
     @Column(name = "created_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private Timestamp createdAt;
+    private Instant createdAt;
 
     @ManyToMany(mappedBy = "savedPosts")
     @JsonIgnore
@@ -58,11 +58,11 @@ public class Post {
         this.user = user;
     }
 
-    public Timestamp getCreatedAt() {
+    public Instant getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Timestamp createdAt) {
+    public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
     }
 

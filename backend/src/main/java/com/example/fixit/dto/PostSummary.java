@@ -2,8 +2,7 @@ package com.example.fixit.dto;
 
 import com.example.fixit.model.Post;
 import com.example.fixit.model.User;
-
-import java.security.Timestamp;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -11,7 +10,7 @@ public class PostSummary {
 
     private String description;
     private String createdBy;
-    private Timestamp createdAt;
+    private Instant createdAt;
     private Set<UserSummary> likers;
     private int likeCount;
 
@@ -27,7 +26,7 @@ public class PostSummary {
         try {
             Set<UserSummary> summary = new HashSet<>();
             for (User u : users) {
-                summary.add(new UserSummary(u.getName(), u.getProfilePic()));
+                summary.add(new UserSummary(u));
             }
             return summary;
         } catch (Exception e) {
@@ -51,11 +50,11 @@ public class PostSummary {
         this.createdBy = createdBy;
     }
 
-    public Timestamp getCreatedAt() {
+    public Instant getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Timestamp createdAt) {
+    public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
     }
 

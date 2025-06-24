@@ -191,9 +191,7 @@ public class UserService {
             List<User> allUsers = userRepository.findAll();
             List<GetUserResponse> response = new ArrayList<>();
             for(User u : allUsers) {
-                GetUserResponse gur = new GetUserResponse(u.getUserRoles(), u.getChats(), followSummary(u.getFollowing()),
-                        followSummary(u.getFollowers()), u.getSavedPosts(), u.getLikedPosts(), u.getOwnedPosts());
-                response.add(gur);
+                response.add(new GetUserResponse(u));
             }
             return response;
         } catch (Exception e) {
@@ -206,17 +204,9 @@ public class UserService {
             Optional<User> OptUser = userRepository.findById(userId);
             if (OptUser.isPresent()) {
                 User u = OptUser.get();
-                GetUserResponse gur = new GetUserResponse();
-                gur.setUserRoles(u.getUserRoles()); //  set roles
-                gur.setChats(u.getChats()); //  set chats
-                gur.setFollowing(followSummary(u.getFollowing())); //  set following
-                gur.setFollowing(followSummary(u.getFollowers())); //  set followers
-                gur.setSavedPosts(u.getSavedPosts());   //  set saved posts
-                gur.setLikedPosts(u.getLikedPosts());   //  set liked posts
-                gur.setOwnedPosts(u.getOwnedPosts());   //  set owned posts
-                return gur;
+                return new GetUserResponse(u);
             } else {
-                return new GetUserResponse(null, null, null, null, null, null, null);
+                return new GetUserResponse();
             }
         } catch (Exception e) {
             throw new RuntimeException(e);

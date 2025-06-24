@@ -19,8 +19,17 @@ public class GetUserResponse {
     private Set<PostSummary> likedPosts;
     private Set<PostSummary> ownedPosts;
 
-    public GetUserResponse() {}
-    
+    public GetUserResponse() {
+        this.isMechanic = false;
+        this.isAdmin = false;
+        this.chats = new HashSet<>();
+        this.following = new HashSet<>();
+        this.followers = new HashSet<>();
+        this.savedPosts = new HashSet<>();
+        this.likedPosts = new HashSet<>();
+        this.ownedPosts = new HashSet<>();
+    }
+
 
     public GetUserResponse(User u) {
         this.isMechanic = u.getUserRoles().getIsMechanic();
@@ -39,6 +48,7 @@ public class GetUserResponse {
             for (Chat cht : chats) {
                 chatSum.add(new ChatSummary(cht));
             }
+            return chatSum;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -48,7 +58,7 @@ public class GetUserResponse {
         try {
             Set<UserSummary> summary = new HashSet<>();
             for (User u : users) {
-                summary.add(new UserSummary(u.getName(), u.getProfilePic()));
+                summary.add(new UserSummary(u));
             }
             return summary;
         } catch (Exception e) {
