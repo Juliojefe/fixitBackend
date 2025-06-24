@@ -1,9 +1,12 @@
 package com.example.fixit.dto;
 
 import com.example.fixit.model.Post;
+import com.example.fixit.model.PostImage;
 import com.example.fixit.model.User;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class PostSummary {
@@ -11,15 +14,57 @@ public class PostSummary {
     private String description;
     private String createdBy;
     private Instant createdAt;
-    private Set<UserSummary> likers;
+    private Set<Integer> likers;
     private int likeCount;
+    private List<String> imageUrls;
 
     public PostSummary(Post post) {
         this.description = post.getDescription();
         this.createdBy = post.getUser().getName();
         this.createdAt = post.getCreatedAt();
-        this.likers = summarizeUsers(post.getLikers());
+        this.likers = getUserIds(post.getLikers());
         this.likeCount = likers.size();
+        this.imageUrls = getImageUrls(post.getPostImages());
+    }
+
+    private Set<Integer> getUserIds(Set<User> users) {
+        try {
+            Set<Integer> ids = new HashSet<>();
+            for (User u : users) {
+                ids.add(u.getUserId());
+            }
+            return ids;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public List<String> getImageUrls() {
+        return imageUrls;
+    }
+
+    public void setImageUrls(List<String> imageUrls) {
+        this.imageUrls = imageUrls;
+    }
+
+    public PostSummary() {
+        this.description = "";
+        this.createdBy = "";
+        this.createdAt = null;
+        likers = new HashSet<>();
+        imageUrls = new ArrayList<>();
+    }
+
+    List<String> getImageUrls(Set<PostImage> postImages) {
+        try {
+            List<String> images = new ArrayList<>();
+            for (PostImage pi : postImages) {
+                images.add(pi.getImageUrl());
+            }
+            return images;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private Set<UserSummary> summarizeUsers(Set<User> users) {
@@ -58,11 +103,11 @@ public class PostSummary {
         this.createdAt = createdAt;
     }
 
-    public Set<UserSummary> getLikers() {
+    public Set<Integer> getLikers() {
         return likers;
     }
 
-    public void setLikers(Set<UserSummary> likers) {
+    public void setLikers(Set<Integer> likers) {
         this.likers = likers;
     }
 

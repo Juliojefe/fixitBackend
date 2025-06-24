@@ -213,6 +213,20 @@ public class UserService {
         }
     }
 
+    public UserSummary getuserSummaryById(int userId){
+        try {
+            Optional<User> OptUser = userRepository.findById(userId);
+            if (OptUser.isPresent()) {
+                User u = OptUser.get();
+                return new UserSummary(u);
+            } else {
+                return new UserSummary();
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public Set<UserSummary> followSummary(Set<User> follow) {
         try {
             Set<UserSummary> summary = new HashSet<>();

@@ -16,6 +16,11 @@ public class UserSummary {
         this.profilePic = u.getProfilePic();
     }
 
+    public UserSummary() {
+        this.name = "";
+        this.profilePic = "";
+    }
+
     public String getName() {
         return name;
     }

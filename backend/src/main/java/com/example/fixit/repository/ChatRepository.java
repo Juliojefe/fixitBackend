@@ -6,5 +6,5 @@ import java.util.List;
 import org.springframework.data.jpa.repository.Query;
 
 public interface ChatRepository extends JpaRepository<Chat, Integer> {
-
+    Optional<Chat> findById(int chatId);
 }
