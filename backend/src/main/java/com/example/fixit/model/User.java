@@ -1,5 +1,6 @@
 package com.example.fixit.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.HashSet;
@@ -26,11 +27,13 @@ public class User {
     private String profilePic;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonIgnore
     private UserRoles userRoles;
 
     @Column(name = "google_id")
     private String googleId;
 
+    @JsonIgnore
     @ManyToMany
     @JoinTable(
             name = "user_chat",
@@ -39,6 +42,7 @@ public class User {
     )
     private Set<Chat> chats = new HashSet<>();
 
+    @JsonIgnore
     @ManyToMany
     @JoinTable(
             name = "follow",
@@ -48,9 +52,11 @@ public class User {
     private Set<User> following = new HashSet<>();
 
     @ManyToMany(mappedBy = "following")
+    @JsonIgnore
     private Set<User> followers = new HashSet<>();
 
     @ManyToMany
+    @JsonIgnore
     @JoinTable(
             name = "save_post",
             joinColumns = @JoinColumn(name = "user_id"),
@@ -58,6 +64,7 @@ public class User {
     )
     private Set<Post> savedPosts = new HashSet<>();
 
+    @JsonIgnore
     @ManyToMany
     @JoinTable(
             name = "like_post",
@@ -66,6 +73,7 @@ public class User {
     )
     private Set<Post> likedPosts = new HashSet<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Post> ownedPosts = new HashSet<>();
 

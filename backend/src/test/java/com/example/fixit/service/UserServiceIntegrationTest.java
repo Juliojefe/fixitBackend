@@ -115,7 +115,7 @@ public class UserServiceIntegrationTest {
         assertTrue(registerResponse.getSuccess());
 
         // Get all users
-        List<User> users = userService.getAllUsers();
+        List<GetUserResponse> users = userService.getAllUsers();
         assertFalse(users.isEmpty());
     }
 
@@ -123,7 +123,7 @@ public class UserServiceIntegrationTest {
     void getAllUsers_noUsers() {
         // Ensure database is empty
         userRepository.deleteAll();
-        List<User> users = userService.getAllUsers();
+        List<GetUserResponse> users = userService.getAllUsers();
         assertTrue(users.isEmpty());
     }
 

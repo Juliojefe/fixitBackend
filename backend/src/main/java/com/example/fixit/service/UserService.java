@@ -191,9 +191,7 @@ public class UserService {
             List<User> allUsers = userRepository.findAll();
             List<GetUserResponse> response = new ArrayList<>();
             for(User u : allUsers) {
-                GetUserResponse gur = new GetUserResponse(u.getUserRoles(), u.getChats(), u.getFollowing(), u.getFollowers(),
-                                        u.getSavedPosts(), u.getLikedPosts(), u.getOwnedPosts());
-                response.add(gur);
+                response.add(new GetUserResponse(u));
             }
             return response;
         } catch (Exception e) {
@@ -206,11 +204,22 @@ public class UserService {
             Optional<User> OptUser = userRepository.findById(userId);
             if (OptUser.isPresent()) {
                 User u = OptUser.get();
-                return new GetUserResponse(u.getUserRoles(), u.getChats(), u.getFollowing(), u.getFollowers(),
-                                            u.getSavedPosts(), u.getLikedPosts(), u.getOwnedPosts());
+                return new GetUserResponse(u);
             } else {
-                return new GetUserResponse(null, null, null, null, null, null, null);
+                return new GetUserResponse();
             }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Set<UserSummary> followSummary(Set<User> follow) {
+        try {
+            Set<UserSummary> summary = new HashSet<>();
+            for (User u : follow) {
+                summary.add(new UserSummary(u.getName(), u.getProfilePic()));
+            }
+            return summary;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

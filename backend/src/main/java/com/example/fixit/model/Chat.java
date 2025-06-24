@@ -1,5 +1,6 @@
 package com.example.fixit.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -22,6 +23,7 @@ public class Chat {
     private String name;
 
     @ManyToMany(mappedBy = "chats")
+    @JsonIgnore
     private Set<User> users = new HashSet<>();
 
     // Getters and setters
