@@ -46,6 +46,11 @@ public class UserController {
     public GetUserResponse getuserById(@PathVariable("id") int userId) {
         return userService.getuserById(userId);
     }
+
+    @GetMapping("/summary/{id}")
+    public UserSummary getuserSummaryById(@PathVariable("id") int userId) {
+        return userService.getuserSummaryById(userId);
+    }
     
     @PatchMapping("/update-name/{id}/name")
     public boolean updateUserName(@RequestBody UpdateNameRequest request) {
