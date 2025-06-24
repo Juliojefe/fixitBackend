@@ -7,7 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.example.fixit.repository.PostRepository;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class PostService {
@@ -29,4 +32,16 @@ public class PostService {
         }
     }
 
+    public Set<PostSummary> getAllPosts() {
+        try {
+            Set<PostSummary> ps = new HashSet<>();
+            List<Post> allPosts = postRepository.findAll();
+            for (Post p : allPosts) {
+                ps.add(new PostSummary(p));
+            }
+            return ps;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

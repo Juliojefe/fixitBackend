@@ -16,6 +16,11 @@ public class ChatSummary {
         this.userNames = userNames;
     }
 
+    public ChatSummary() {
+        this.name = "";
+        userNames = new HashSet<>();
+    }
+
     public ChatSummary(Chat chat) {
         this.name = chat.getName();
         Set<String> userNames = new HashSet<>();

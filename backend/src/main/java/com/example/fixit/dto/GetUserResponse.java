@@ -3,11 +3,8 @@ package com.example.fixit.dto;
 import com.example.fixit.model.Chat;
 import com.example.fixit.model.Post;
 import com.example.fixit.model.User;
-import com.example.fixit.model.UserRoles;
 import java.util.HashSet;
 import java.util.Set;
-
-import java.util.List;
 
 public class GetUserResponse {
     private boolean isMechanic;
@@ -18,6 +15,8 @@ public class GetUserResponse {
     private Set<Integer> savedPostsIds;
     private Set<Integer> likedPostsIds;
     private Set<Integer> ownedPostsIds;
+    private int followerCount;
+    private int followingCount;
 
     public GetUserResponse() {
         this.isMechanic = false;
@@ -28,6 +27,8 @@ public class GetUserResponse {
         this.savedPostsIds = new HashSet<>();
         this.likedPostsIds = new HashSet<>();
         this.ownedPostsIds = new HashSet<>();
+        this.followerCount = 0;
+        this.followingCount = 0;
     }
 
     public GetUserResponse(User u) {
@@ -39,6 +40,8 @@ public class GetUserResponse {
         this.savedPostsIds = getPostIds(u.getSavedPosts());
         this.likedPostsIds = getPostIds(u.getLikedPosts());
         this.ownedPostsIds = getPostIds(u.getOwnedPosts());
+        this.followerCount = followersIds.size();
+        this.followingCount = followingIds.size();
     }
 
     private Set<Integer> getChatIds(Set<Chat> chats) {
@@ -111,6 +114,22 @@ public class GetUserResponse {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public int getFollowerCount() {
+        return followerCount;
+    }
+
+    public void setFollowerCount(int followerCount) {
+        this.followerCount = followerCount;
+    }
+
+    public int getFollowingCount() {
+        return followingCount;
+    }
+
+    public void setFollowingCount(int followingCount) {
+        this.followingCount = followingCount;
     }
 
     public boolean isMechanic() {

@@ -14,7 +14,7 @@ public class PostSummary {
     private String description;
     private String createdBy;
     private Instant createdAt;
-    private Set<UserSummary> likers;
+    private Set<Integer> likers;
     private int likeCount;
     private List<String> imageUrls;
 
@@ -22,9 +22,21 @@ public class PostSummary {
         this.description = post.getDescription();
         this.createdBy = post.getUser().getName();
         this.createdAt = post.getCreatedAt();
-        this.likers = summarizeUsers(post.getLikers());
+        this.likers = getUserIds(post.getLikers());
         this.likeCount = likers.size();
         this.imageUrls = getImageUrls(post.getPostImages());
+    }
+
+    private Set<Integer> getUserIds(Set<User> users) {
+        try {
+            Set<Integer> ids = new HashSet<>();
+            for (User u : users) {
+                ids.add(u.getUserId());
+            }
+            return ids;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public List<String> getImageUrls() {
@@ -91,11 +103,11 @@ public class PostSummary {
         this.createdAt = createdAt;
     }
 
-    public Set<UserSummary> getLikers() {
+    public Set<Integer> getLikers() {
         return likers;
     }
 
-    public void setLikers(Set<UserSummary> likers) {
+    public void setLikers(Set<Integer> likers) {
         this.likers = likers;
     }
 

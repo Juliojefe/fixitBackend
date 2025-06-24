@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("api/post")
@@ -16,7 +17,12 @@ public class PostController {
     private PostService postService;
 
     @GetMapping("/{id}")
-    public PostSummary getuserById(@PathVariable("id") int postId) {
+    public PostSummary getPostById(@PathVariable("id") int postId) {
         return postService.getPostSummaryById(postId);
+    }
+
+    @GetMapping("/")
+    public Set<PostSummary> getALlPosts() {
+        return postService.getAllPosts();
     }
 }
