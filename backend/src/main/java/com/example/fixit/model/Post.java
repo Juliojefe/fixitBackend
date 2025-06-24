@@ -1,5 +1,6 @@
 package com.example.fixit.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.security.Timestamp;
 import java.util.HashSet;
@@ -18,15 +19,18 @@ public class Post {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
+    @JsonIgnore
     private User user;
 
     @Column(name = "created_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private Timestamp createdAt;
 
     @ManyToMany(mappedBy = "savedPosts")
+    @JsonIgnore
     private Set<User> savers = new HashSet<>();
 
     @ManyToMany(mappedBy = "likedPosts")
+    @JsonIgnore
     private Set<User> likers = new HashSet<>();
 
     // Getters and setters

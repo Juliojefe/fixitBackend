@@ -10,39 +10,85 @@ import java.util.Set;
 import java.util.List;
 
 public class GetUserResponse {
-    private UserRoles userRoles;
-    private Set<Chat> chats;
+    private boolean isMechanic;
+    private boolean isAdmin;
+    private Set<ChatSummary> chats;
     private Set<UserSummary> following;
     private Set<UserSummary> followers;
-    private Set<Post> savedPosts;
-    private Set<Post> likedPosts;
-    private Set<Post> ownedPosts;
+    private Set<PostSummary> savedPosts;
+    private Set<PostSummary> likedPosts;
+    private Set<PostSummary> ownedPosts;
 
     public GetUserResponse() {}
+    
 
-    public GetUserResponse(UserRoles userRoles, Set<Chat> chats, Set<UserSummary> following, Set<UserSummary> followers, Set<Post> savedPosts, Set<Post> likedPosts, Set<Post> ownedPosts) {
-        this.userRoles = userRoles;
-        this.chats = chats;
-        this.following = following;
-        this.followers = followers;
-        this.savedPosts = savedPosts;
-        this.likedPosts = likedPosts;
-        this.ownedPosts = ownedPosts;
+    public GetUserResponse(User u) {
+        this.isMechanic = u.getUserRoles().getIsMechanic();
+        this.isAdmin = u.getUserRoles().getIsAdmin();
+        this.chats = summarizeChat(u.getChats());
+        this.following = summarizeUsers(u.getFollowing());
+        this.followers = summarizeUsers(u.getFollowers());
+        this.savedPosts = summarizePosts(u.getSavedPosts());
+        this.likedPosts = summarizePosts(u.getLikedPosts());
+        this.ownedPosts = summarizePosts(u.getOwnedPosts());
     }
 
-    public UserRoles getUserRoles() {
-        return userRoles;
+    private Set<ChatSummary> summarizeChat(Set<Chat> chats) {
+        try {
+            Set<ChatSummary> chatSum = new HashSet<>();
+            for (Chat cht : chats) {
+                chatSum.add(new ChatSummary(cht));
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void setUserRoles(UserRoles userRoles) {
-        this.userRoles = userRoles;
+    private Set<UserSummary> summarizeUsers(Set<User> users) {
+        try {
+            Set<UserSummary> summary = new HashSet<>();
+            for (User u : users) {
+                summary.add(new UserSummary(u.getName(), u.getProfilePic()));
+            }
+            return summary;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public Set<Chat> getChats() {
+    private Set<PostSummary> summarizePosts(Set<Post> posts) {
+        try {
+            Set<PostSummary> pSum = new HashSet<>();
+            for (Post p : posts) {
+                pSum.add(new PostSummary(p));
+            }
+            return pSum;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public boolean isMechanic() {
+        return isMechanic;
+    }
+
+    public void setMechanic(boolean mechanic) {
+        isMechanic = mechanic;
+    }
+
+    public boolean isAdmin() {
+        return isAdmin;
+    }
+
+    public void setAdmin(boolean admin) {
+        isAdmin = admin;
+    }
+
+    public Set<ChatSummary> getChats() {
         return chats;
     }
 
-    public void setChats(Set<Chat> chats) {
+    public void setChats(Set<ChatSummary> chats) {
         this.chats = chats;
     }
 
@@ -62,27 +108,27 @@ public class GetUserResponse {
         this.followers = followers;
     }
 
-    public Set<Post> getSavedPosts() {
+    public Set<PostSummary> getSavedPosts() {
         return savedPosts;
     }
 
-    public void setSavedPosts(Set<Post> savedPosts) {
+    public void setSavedPosts(Set<PostSummary> savedPosts) {
         this.savedPosts = savedPosts;
     }
 
-    public Set<Post> getLikedPosts() {
+    public Set<PostSummary> getLikedPosts() {
         return likedPosts;
     }
 
-    public void setLikedPosts(Set<Post> likedPosts) {
+    public void setLikedPosts(Set<PostSummary> likedPosts) {
         this.likedPosts = likedPosts;
     }
 
-    public Set<Post> getOwnedPosts() {
+    public Set<PostSummary> getOwnedPosts() {
         return ownedPosts;
     }
 
-    public void setOwnedPosts(Set<Post> ownedPosts) {
+    public void setOwnedPosts(Set<PostSummary> ownedPosts) {
         this.ownedPosts = ownedPosts;
     }
 }
