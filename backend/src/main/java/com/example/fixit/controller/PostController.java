@@ -1,5 +1,6 @@
 package com.example.fixit.controller;
 
+import com.example.fixit.dto.PostSummary;
 import com.example.fixit.model.Post;
 import com.example.fixit.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,5 +15,8 @@ public class PostController {
     @Autowired
     private PostService postService;
 
-    //  TODO
+    @GetMapping("/{id}")
+    public PostSummary getuserById(@PathVariable("id") int postId) {
+        return postService.getPostSummaryById(postId);
+    }
 }

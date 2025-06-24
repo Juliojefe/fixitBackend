@@ -27,6 +27,14 @@ public class PostSummary {
         this.imageUrls = getImageUrls(post.getPostImages());
     }
 
+    public List<String> getImageUrls() {
+        return imageUrls;
+    }
+
+    public void setImageUrls(List<String> imageUrls) {
+        this.imageUrls = imageUrls;
+    }
+
     public PostSummary() {
         this.description = "";
         this.createdBy = "";
