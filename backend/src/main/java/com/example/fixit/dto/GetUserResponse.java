@@ -12,34 +12,69 @@ import java.util.List;
 public class GetUserResponse {
     private boolean isMechanic;
     private boolean isAdmin;
-    private Set<ChatSummary> chats;
-    private Set<UserSummary> following;
-    private Set<UserSummary> followers;
-    private Set<PostSummary> savedPosts;
-    private Set<PostSummary> likedPosts;
-    private Set<PostSummary> ownedPosts;
+    private Set<Integer> chatIds;
+    private Set<Integer> followingIds;
+    private Set<Integer> followersIds;
+    private Set<Integer> savedPostsIds;
+    private Set<Integer> likedPostsIds;
+    private Set<Integer> ownedPostsIds;
 
     public GetUserResponse() {
         this.isMechanic = false;
         this.isAdmin = false;
-        this.chats = new HashSet<>();
-        this.following = new HashSet<>();
-        this.followers = new HashSet<>();
-        this.savedPosts = new HashSet<>();
-        this.likedPosts = new HashSet<>();
-        this.ownedPosts = new HashSet<>();
+        this.chatIds = new HashSet<>();
+        this.followingIds = new HashSet<>();
+        this.followersIds = new HashSet<>();
+        this.savedPostsIds = new HashSet<>();
+        this.likedPostsIds = new HashSet<>();
+        this.ownedPostsIds = new HashSet<>();
     }
-
 
     public GetUserResponse(User u) {
         this.isMechanic = u.getUserRoles().getIsMechanic();
         this.isAdmin = u.getUserRoles().getIsAdmin();
-        this.chats = summarizeChat(u.getChats());
-        this.following = summarizeUsers(u.getFollowing());
-        this.followers = summarizeUsers(u.getFollowers());
-        this.savedPosts = summarizePosts(u.getSavedPosts());
-        this.likedPosts = summarizePosts(u.getLikedPosts());
-        this.ownedPosts = summarizePosts(u.getOwnedPosts());
+        this.chatIds = getChatIds(u.getChats());
+        this.followingIds = getUserIds(u.getFollowing());
+        this.followersIds = getUserIds(u.getFollowers());
+        this.savedPostsIds = getPostIds(u.getSavedPosts());
+        this.likedPostsIds = getPostIds(u.getLikedPosts());
+        this.ownedPostsIds = getPostIds(u.getOwnedPosts());
+    }
+
+    private Set<Integer> getChatIds(Set<Chat> chats) {
+        try {
+            Set<Integer> ids = new HashSet<>();
+            for (Chat cht : chats) {
+                ids.add(cht.getChatId());
+            }
+            return ids;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Set<Integer> getUserIds(Set<User> users) {
+        try {
+            Set<Integer> ids = new HashSet<>();
+            for (User u : users) {
+                ids.add(u.getUserId());
+            }
+            return ids;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Set<Integer> getPostIds(Set<Post> posts) {
+        try {
+            Set<Integer> ids = new HashSet<>();
+            for (Post p : posts) {
+                ids.add(p.getPostId());
+            }
+            return ids;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private Set<ChatSummary> summarizeChat(Set<Chat> chats) {
@@ -94,51 +129,51 @@ public class GetUserResponse {
         isAdmin = admin;
     }
 
-    public Set<ChatSummary> getChats() {
-        return chats;
+    public Set<Integer> getChatIds() {
+        return chatIds;
     }
 
-    public void setChats(Set<ChatSummary> chats) {
-        this.chats = chats;
+    public void setChatIds(Set<Integer> chatIds) {
+        this.chatIds = chatIds;
     }
 
-    public Set<UserSummary> getFollowing() {
-        return following;
+    public Set<Integer> getFollowingIds() {
+        return followingIds;
     }
 
-    public void setFollowing(Set<UserSummary> following) {
-        this.following = following;
+    public void setFollowingIds(Set<Integer> followingIds) {
+        this.followingIds = followingIds;
     }
 
-    public Set<UserSummary> getFollowers() {
-        return followers;
+    public Set<Integer> getFollowersIds() {
+        return followersIds;
     }
 
-    public void setFollowers(Set<UserSummary> followers) {
-        this.followers = followers;
+    public void setFollowersIds(Set<Integer> followersIds) {
+        this.followersIds = followersIds;
     }
 
-    public Set<PostSummary> getSavedPosts() {
-        return savedPosts;
+    public Set<Integer> getSavedPostsIds() {
+        return savedPostsIds;
     }
 
-    public void setSavedPosts(Set<PostSummary> savedPosts) {
-        this.savedPosts = savedPosts;
+    public void setSavedPostsIds(Set<Integer> savedPostsIds) {
+        this.savedPostsIds = savedPostsIds;
     }
 
-    public Set<PostSummary> getLikedPosts() {
-        return likedPosts;
+    public Set<Integer> getLikedPostsIds() {
+        return likedPostsIds;
     }
 
-    public void setLikedPosts(Set<PostSummary> likedPosts) {
-        this.likedPosts = likedPosts;
+    public void setLikedPostsIds(Set<Integer> likedPostsIds) {
+        this.likedPostsIds = likedPostsIds;
     }
 
-    public Set<PostSummary> getOwnedPosts() {
-        return ownedPosts;
+    public Set<Integer> getOwnedPostsIds() {
+        return ownedPostsIds;
     }
 
-    public void setOwnedPosts(Set<PostSummary> ownedPosts) {
-        this.ownedPosts = ownedPosts;
+    public void setOwnedPostsIds(Set<Integer> ownedPostsIds) {
+        this.ownedPostsIds = ownedPostsIds;
     }
 }

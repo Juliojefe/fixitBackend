@@ -33,6 +33,9 @@ public class Post {
     @JsonIgnore
     private Set<User> likers = new HashSet<>();
 
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<PostImage> images = new HashSet<>();
+
     // Getters and setters
     public Integer getPostId() {
         return postId;
@@ -40,6 +43,14 @@ public class Post {
 
     public void setPostId(Integer postId) {
         this.postId = postId;
+    }
+
+    public Set<PostImage> getPostImages() {
+        return images;
+    }
+
+    public void setPostImages(Set<PostImage> images) {
+        this.images = images;
     }
 
     public String getDescription() {
