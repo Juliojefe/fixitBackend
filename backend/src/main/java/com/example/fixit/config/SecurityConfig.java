@@ -9,9 +9,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
 import java.util.Arrays;
 
 @Configuration
@@ -30,9 +27,16 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
                         // Permit public access to OAuth2 and login/register endpoints
-                        .requestMatchers("/oauth2/authorization/google", "/login/oauth2/code/google").permitAll()
-                        .requestMatchers("/api/user/register", "/api/user/login",
-                                "/api/user/register/google/", "/api/user/login/google/").permitAll()
+                        .requestMatchers(
+                                "/oauth2/authorization/google",
+                                "/login/oauth2/code/google",
+                                "/api/user/register",
+                                "/api/user/login",
+                                "/api/user/register/google/",
+                                "/api/user/login/google/",
+                                // Add these lines to allow public GET access to user info for testing
+                                "/api/user/**"
+                        ).permitAll()
                         // All other requests require authentication
                         .anyRequest().authenticated()
                 )
@@ -48,28 +52,14 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Allow both frontend (3000) and backend (8080) origins
         configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:8080"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
+        configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
-    }
-
-    @Bean
-    public WebMvcConfigurer webMvcConfigurer() {
-        return new WebMvcConfigurer() {
-            @Override
-            public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:3000", "http://localhost:8080")
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
-                        .allowedHeaders("*")
-                        .allowCredentials(true);
-            }
-        };
     }
 }
