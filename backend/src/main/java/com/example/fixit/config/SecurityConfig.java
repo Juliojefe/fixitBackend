@@ -31,11 +31,13 @@ public class SecurityConfig {
                                 "/oauth2/authorization/google",
                                 "/login/oauth2/code/google",
                                 "/api/user/register",
+                                "/api/user/register/",
                                 "/api/user/login",
                                 "/api/user/register/google/",
                                 "/api/user/login/google/",
                                 // Add these lines to allow public GET access to user info for testing
-                                "/api/user/**"
+                                "/api/user/**",
+                                "/api/follow/mutual/**"
                         ).permitAll()
                         // All other requests require authentication
                         .anyRequest().authenticated()

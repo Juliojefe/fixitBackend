@@ -227,6 +227,16 @@ public class UserService {
         }
     }
 
+    public MutualFollowResponse checkMutualFollow(int userAId, int userBId) {
+        Optional<User> optUserA = userRepository.findById(userAId);
+        Optional<User> optUserB = userRepository.findById(userBId);
+        if (optUserA.isPresent() && optUserB.isPresent()) {
+            return new MutualFollowResponse(optUserA.get(), optUserB.get());
+        } else {
+            return new MutualFollowResponse();
+        }
+    }
+
     public Set<UserSummary> followSummary(Set<User> follow) {
         try {
             Set<UserSummary> summary = new HashSet<>();
