@@ -31,6 +31,7 @@ public class SecurityConfig {
                                 "/oauth2/authorization/google",
                                 "/login/oauth2/code/google",
                                 "/api/user/register",
+                                "/api/user/register/",
                                 "/api/user/login",
                                 "/api/user/register/google/",
                                 "/api/user/login/google/",
