@@ -30,6 +30,6 @@ public class FollowController {
 
     @DeleteMapping("/{activeUserId}/remove-follower/{removeFollowerId}")
     public boolean removeFollower(@PathVariable int activeUserId, @PathVariable int removeFollowerId) {
-        return followService.unfollow(activeUserId, removeFollowerId);
+        return followService.removeFollower(activeUserId, removeFollowerId);
     }
 }
