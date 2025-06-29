@@ -37,7 +37,9 @@ public class SecurityConfig {
                                 "/api/user/login/google/",
                                 // Add these lines to allow public GET access to user info for testing
                                 "/api/user/**",
-                                "/api/follow/mutual/**"
+                                "/api/follow/mutual/**",
+                                "/api/follow/**",
+                                "/api/follow"
                         ).permitAll()
                         // All other requests require authentication
                         .anyRequest().authenticated()
