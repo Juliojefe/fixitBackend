@@ -28,8 +28,8 @@ public class FollowController {
         return followService.follow(activeUserId, followUserId);
     }
 
-    @DeleteMapping("/{activeUserId}/remove-follower/{id}")
-    public boolean removeFollower(@PathVariable int activeUserId, @PathVariable int id) {
-        return followService.unfollow(activeUserId, id);
+    @DeleteMapping("/{activeUserId}/remove-follower/{removeFollowerId}")
+    public boolean removeFollower(@PathVariable int activeUserId, @PathVariable int removeFollowerId) {
+        return followService.unfollow(activeUserId, removeFollowerId);
     }
 }

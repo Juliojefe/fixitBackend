@@ -38,6 +38,9 @@ public class FollowService {
                 User unfollow = optionalUnfollow.get();
                 if (active.getFollowing().contains(unfollow)) {
                     active.getFollowing().remove(unfollow);
+                    unfollow.getFollowers().remove(active);
+                    userRepository.save(active);
+                    userRepository.save(unfollow);
                     return true;    //  true: both exist, and active followed the other
                 } else {
                     return false;   //  false: never followed
@@ -59,6 +62,9 @@ public class FollowService {
                 User follow = optionalFollow.get();
                 if (!active.getFollowing().contains(follow)) {
                     active.getFollowing().add(follow);
+                    follow.getFollowers().add(active);
+                    userRepository.save(active);
+                    userRepository.save(follow);
                     return true;    //  true: both exist, active don't follow the other
                 } else {
                     return false;   //  false: active already follows
@@ -71,8 +77,28 @@ public class FollowService {
         }
     }
 
-    public boolean removeFollower(int activeUserId, int id) {
-        return false;
+    public boolean removeFollower(int activeUserId, int removeFollowerId) {
+        try {
+            Optional<User> optActive = userRepository.findById(activeUserId);
+            Optional<User> optionalRemoveFollow = userRepository.findById(removeFollowerId);
+            if (optActive.isPresent() && optionalRemoveFollow.isPresent()) {
+                User active = optActive.get();
+                User removeFollow = optionalRemoveFollow.get();
+                if (active.getFollowers().contains(removeFollow)) {
+                    active.getFollowers().remove(removeFollow);
+                    removeFollow.getFollowing().remove(active);
+                    userRepository.save(active);
+                    userRepository.save(removeFollow);
+                    return true;    //  true: both exist, active is followed by the other
+                } else {
+                    return false;   //  false: active is not followed by the other
+                }
+            } else {
+                return false;   //  false: one or both don't exist
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }
