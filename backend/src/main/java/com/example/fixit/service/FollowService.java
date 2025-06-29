@@ -68,5 +68,11 @@ public class FollowService {
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
-        }    }
+        }
+    }
+
+    public boolean removeFollower(int activeUserId, int id) {
+        return false;
+    }
+
 }
