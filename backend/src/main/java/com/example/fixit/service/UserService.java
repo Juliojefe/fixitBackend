@@ -1,5 +1,6 @@
 package com.example.fixit.service;
 
+import com.example.fixit.controller.UserController;
 import com.example.fixit.dto.*;
 import com.example.fixit.model.Chat;
 import com.example.fixit.model.Post;
@@ -222,6 +223,19 @@ public class UserService {
             } else {
                 return new UserSummary();
             }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public List<Integer> getAllUserIds() {
+        try {
+            List<Integer> ids = new ArrayList<>();
+            List<User> allUsers = userRepository.findAll();
+            for (User u : allUsers) {
+                ids.add(u.getUserId());
+            }
+            return ids;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
