@@ -52,6 +52,11 @@ public class UserController {
         return userService.getuserSummaryById(userId);
     }
 
+    @GetMapping("/all-ids")
+    public List<Integer> getAllUserIds() {
+        return userService.getAllUserIds();
+    }
+
     @GetMapping("/mutual/{userAId}/{userBId}")
     public MutualFollowResponse checkMutualFollow(@PathVariable int userAId, @PathVariable int userBId) {
         return userService.checkMutualFollow(userAId, userBId);
