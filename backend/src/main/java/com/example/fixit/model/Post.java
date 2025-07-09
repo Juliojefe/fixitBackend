@@ -36,6 +36,10 @@ public class Post {
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<PostImage> images = new HashSet<>();
 
+    @OneToMany(mappedBy = "post")
+    @JsonIgnore
+    private Set<Comment> comments = new HashSet<>();
+
     // Getters and setters
     public Integer getPostId() {
         return postId;
@@ -91,5 +95,33 @@ public class Post {
 
     public void setLikers(Set<User> likers) {
         this.likers = likers;
+    }
+
+    public Set<PostImage> getImages() {
+        return images;
+    }
+
+    public void setImages(Set<PostImage> images) {
+        this.images = images;
+    }
+
+    public Set<Comment> getComments() {
+        return comments;
+    }
+
+    public Set<Integer> getCommentIds() {
+        try {
+            Set<Integer> ids = new HashSet<>();
+            for (Comment c : this.getComments()) {
+                ids.add(c.getCommentId());
+            }
+            return ids;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void setComments(Set<Comment> comments) {
+        this.comments = comments;
     }
 }
