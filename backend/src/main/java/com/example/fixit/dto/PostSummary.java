@@ -3,6 +3,8 @@ package com.example.fixit.dto;
 import com.example.fixit.model.Post;
 import com.example.fixit.model.PostImage;
 import com.example.fixit.model.User;
+import jakarta.persistence.criteria.CriteriaBuilder;
+
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -13,17 +15,23 @@ public class PostSummary {
 
     private String description;
     private String createdBy;
+    private String createdByProfilePicUrl;
     private Instant createdAt;
-    private Set<Integer> likers;
+    private Set<Integer> likeIds;
     private int likeCount;
+    private Set<Integer> commentIds;
+    private int commentCount;
     private List<String> imageUrls;
 
     public PostSummary(Post post) {
         this.description = post.getDescription();
         this.createdBy = post.getUser().getName();
+        this.createdByProfilePicUrl = post.getUser().getProfilePic();
         this.createdAt = post.getCreatedAt();
-        this.likers = getUserIds(post.getLikers());
-        this.likeCount = likers.size();
+        this.likeIds = getUserIds(post.getLikers());
+        this.likeCount = likeIds.size();
+        this.commentIds = post.getCommentIds();
+        this.commentCount = post.getComments().size();
         this.imageUrls = getImageUrls(post.getPostImages());
     }
 
@@ -51,7 +59,7 @@ public class PostSummary {
         this.description = "";
         this.createdBy = "";
         this.createdAt = null;
-        likers = new HashSet<>();
+        likeIds = new HashSet<>();
         imageUrls = new ArrayList<>();
     }
 
@@ -103,12 +111,12 @@ public class PostSummary {
         this.createdAt = createdAt;
     }
 
-    public Set<Integer> getLikers() {
-        return likers;
+    public Set<Integer> getLikeIds() {
+        return likeIds;
     }
 
-    public void setLikers(Set<Integer> likers) {
-        this.likers = likers;
+    public void setLikeIds(Set <Integer> likeIds) {
+        this.likeIds = likeIds;
     }
 
     public int getLikeCount() {
@@ -117,5 +125,29 @@ public class PostSummary {
 
     public void setLikeCount(int likeCount) {
         this.likeCount = likeCount;
+    }
+
+    public String getCreatedByProfilePicUrl() {
+        return createdByProfilePicUrl;
+    }
+
+    public void setCreatedByProfilePicUrl(String createdByProfilePicUrl) {
+        this.createdByProfilePicUrl = createdByProfilePicUrl;
+    }
+
+    public Set<Integer> getCommentIds() {
+        return commentIds;
+    }
+
+    public void setCommentIds(Set<Integer> commentIds) {
+        this.commentIds = commentIds;
+    }
+
+    public int getCommentCount() {
+        return commentCount;
+    }
+
+    public void setCommentCount(int commentCount) {
+        this.commentCount = commentCount;
     }
 }
