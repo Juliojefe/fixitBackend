@@ -39,7 +39,11 @@ public class SecurityConfig {
                                 "/api/user/**",
                                 "/api/follow/mutual/**",
                                 "/api/follow/**",
-                                "/api/follow"
+                                "/api/follow",
+                                "/api/post/all-ids",
+                                "api/post/all-ids/",
+                                "/api/post/**"
+
                         ).permitAll()
                         // All other requests require authentication
                         .anyRequest().authenticated()
