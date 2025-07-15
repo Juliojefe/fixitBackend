@@ -58,4 +58,15 @@ public class PostController {
         return postService.savePost(postId, userId);
     }
 
+    @DeleteMapping("/unlike-post/{postId}/{userId}")
+    public boolean unlikePost(@PathVariable("postId") int postId, @PathVariable("userId") int userId) {
+        return postService.unlikePost(postId, userId);
+    }
+
+    @DeleteMapping("/unSave-post/{postId}/{userId}")
+    public boolean unSavePost(@PathVariable("postId") int postId, @PathVariable("userId") int userId) {
+        return postService.unSavePost(postId, userId);
+    }
+
+
 }

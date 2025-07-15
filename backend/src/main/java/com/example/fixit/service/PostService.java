@@ -135,7 +135,7 @@ public class PostService {
                 u.getLikedPosts().add(p);
                 postRepository.save(p);
                 userRepository.save(u);
-                return true;    //  both exist, post has not been previously liked
+                return true;    //  both exist, post has not been previously liked and can now be liked
             } else {
                 return false;   //  one or the other does not exist
             }
@@ -158,7 +158,53 @@ public class PostService {
                 u.getSavedPosts().add(p);
                 postRepository.save(p);
                 userRepository.save(u);
-                return true;    //  both exist, post has not been previously saved
+                return true;    //  both exist, post has not been previously saved and can now be saved
+            } else {
+                return false;   //  one or the other does not exist
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public boolean unlikePost(int postId, int userId) {
+        try {
+            Optional<Post> optPost = postRepository.findById(postId);
+            Optional<User> optUser = userRepository.findById(userId);
+            if (optUser.isPresent() && optPost.isPresent()) {
+                Post p = optPost.get();
+                User u = optUser.get();
+                if (p.getLikers().contains(u) || u.getLikedPosts().contains(p)) {
+                    p.getLikers().remove(u);
+                    u.getLikedPosts().remove(p);
+                    postRepository.save(p);
+                    userRepository.save(u);
+                    return true;   //  already liked, now unlike
+                }
+                return false;    //  cannot unlike what has not been liked
+            } else {
+                return false;   //  one or the other does not exist
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public boolean unSavePost(int postId, int userId) {
+        try {
+            Optional<Post> optPost = postRepository.findById(postId);
+            Optional<User> optUser = userRepository.findById(userId);
+            if (optUser.isPresent() && optPost.isPresent()) {
+                Post p = optPost.get();
+                User u = optUser.get();
+                if (p.getSavers().contains(u) || u.getLikedPosts().contains(p)) {
+                    p.getSavers().remove(u);
+                    u.getSavedPosts().remove(p);
+                    postRepository.save(p);
+                    userRepository.save(u);
+                    return true;   //  already saved, now unSave
+                }
+                return false;    //  cannot unSave what has not been saved
             } else {
                 return false;   //  one or the other does not exist
             }
