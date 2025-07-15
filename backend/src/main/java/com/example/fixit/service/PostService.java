@@ -4,6 +4,7 @@ import com.example.fixit.dto.PostSummary;
 import com.example.fixit.model.Post;
 import com.example.fixit.model.User;
 import com.example.fixit.repository.UserRepository;
+import org.springframework.security.access.method.P;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.example.fixit.repository.PostRepository;
@@ -114,6 +115,46 @@ public class PostService {
                 return ids;
             } else {
                 return new HashSet<>();
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public boolean likePost(int postId, int userId) {
+        try {
+            Optional<Post> optPost = postRepository.findById(postId);
+            Optional<User> optUser = userRepository.findById(userId);
+            if (optUser.isPresent() && optPost.isPresent()) {
+                Post p = optPost.get();
+                User u = optUser.get();
+                p.getLikers().add(u);
+                u.getLikedPosts().add(p);
+                postRepository.save(p);
+                userRepository.save(u);
+                return true;
+            } else {
+                return false;
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public boolean savePost(int postId, int userId) {
+        try {
+            Optional<Post> optPost = postRepository.findById(postId);
+            Optional<User> optUser = userRepository.findById(userId);
+            if (optUser.isPresent() && optPost.isPresent()) {
+                Post p = optPost.get();
+                User u = optUser.get();
+                p.getSavers().add(u);
+                u.getSavedPosts().add(p);
+                postRepository.save(p);
+                userRepository.save(u);
+                return true;
+            } else {
+                return false;
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
