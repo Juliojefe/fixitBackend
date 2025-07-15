@@ -128,13 +128,16 @@ public class PostService {
             if (optUser.isPresent() && optPost.isPresent()) {
                 Post p = optPost.get();
                 User u = optUser.get();
+                if (p.getLikers().contains(u) || u.getLikedPosts().contains(p)) {
+                    return false;   //  already liked, no double liking
+                }
                 p.getLikers().add(u);
                 u.getLikedPosts().add(p);
                 postRepository.save(p);
                 userRepository.save(u);
-                return true;
+                return true;    //  both exist, post has not been previously liked
             } else {
-                return false;
+                return false;   //  one or the other does not exist
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -148,13 +151,16 @@ public class PostService {
             if (optUser.isPresent() && optPost.isPresent()) {
                 Post p = optPost.get();
                 User u = optUser.get();
+                if (p.getSavers().contains(u) || u.getSavedPosts().contains(p)) {
+                    return false;   //  already saved, no double saving
+                }
                 p.getSavers().add(u);
                 u.getSavedPosts().add(p);
                 postRepository.save(p);
                 userRepository.save(u);
-                return true;
+                return true;    //  both exist, post has not been previously saved
             } else {
-                return false;
+                return false;   //  one or the other does not exist
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
