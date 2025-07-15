@@ -47,4 +47,26 @@ public class PostController {
     public Set<Integer> getSavedPostByUserId(@PathVariable("userId") int userId) {
         return postService.getSavedPostsByUserId(userId);
     }
+
+    @PostMapping("/like-post/{postId}/{userId}")
+    public boolean likePost(@PathVariable("postId") int postId, @PathVariable("userId") int userId) {
+        return postService.likePost(postId, userId);
+    }
+
+    @PostMapping("/save-post/{postId}/{userId}")
+    public boolean savePost(@PathVariable("postId") int postId, @PathVariable("userId") int userId) {
+        return postService.savePost(postId, userId);
+    }
+
+    @DeleteMapping("/unlike-post/{postId}/{userId}")
+    public boolean unlikePost(@PathVariable("postId") int postId, @PathVariable("userId") int userId) {
+        return postService.unlikePost(postId, userId);
+    }
+
+    @DeleteMapping("/unSave-post/{postId}/{userId}")
+    public boolean unSavePost(@PathVariable("postId") int postId, @PathVariable("userId") int userId) {
+        return postService.unSavePost(postId, userId);
+    }
+
+
 }
