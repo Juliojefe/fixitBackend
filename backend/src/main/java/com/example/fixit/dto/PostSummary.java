@@ -22,6 +22,7 @@ public class PostSummary {
     private Set<Integer> commentIds;
     private int commentCount;
     private List<String> imageUrls;
+    private Set<Integer> savedIds;
 
     public PostSummary(Post post) {
         this.description = post.getDescription();
@@ -33,6 +34,7 @@ public class PostSummary {
         this.commentIds = post.getCommentIds();
         this.commentCount = post.getComments().size();
         this.imageUrls = getImageUrls(post.getPostImages());
+        this.savedIds = getUserIds(post.getSavers());
     }
 
     private Set<Integer> getUserIds(Set<User> users) {
@@ -149,5 +151,13 @@ public class PostSummary {
 
     public void setCommentCount(int commentCount) {
         this.commentCount = commentCount;
+    }
+
+    public Set<Integer> getSavedIds() {
+        return savedIds;
+    }
+
+    public void setSaveIds(Set<Integer> saveIds) {
+        this.savedIds = saveIds;
     }
 }
