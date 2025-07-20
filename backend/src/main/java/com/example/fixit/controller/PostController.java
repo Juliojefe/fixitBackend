@@ -1,5 +1,6 @@
 package com.example.fixit.controller;
 
+import com.example.fixit.dto.CreatePostRequest;
 import com.example.fixit.dto.PostSummary;
 import com.example.fixit.model.Post;
 import com.example.fixit.service.PostService;
@@ -68,5 +69,9 @@ public class PostController {
         return postService.unSavePost(postId, userId);
     }
 
+    @PostMapping("/create-post")
+    public PostSummary createPost(@RequestBody CreatePostRequest request) {
+        return postService.createPost(request);
+    }
 
 }
