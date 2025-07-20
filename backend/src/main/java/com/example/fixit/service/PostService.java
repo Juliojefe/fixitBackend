@@ -1,7 +1,9 @@
 package com.example.fixit.service;
 
+import com.example.fixit.dto.CreatePostRequest;
 import com.example.fixit.dto.PostSummary;
 import com.example.fixit.model.Post;
+import com.example.fixit.model.PostImage;
 import com.example.fixit.model.User;
 import com.example.fixit.repository.UserRepository;
 import org.springframework.security.access.method.P;
@@ -9,7 +11,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.example.fixit.repository.PostRepository;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -208,6 +212,34 @@ public class PostService {
             } else {
                 return false;   //  one or the other does not exist
             }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public PostSummary createPost(@RequestBody CreatePostRequest request) {
+        try {
+            Optional<User> optUser = userRepository.findById(request.getUser_id());
+            User u;
+            if (optUser.isPresent()) {
+                u = optUser.get();
+            } else {
+                throw new RuntimeException("user not found");
+            }
+            Post post = new Post();
+            post.setDescription(request.getDescription());
+            post.setUser(u);
+            post.setCreatedAt(request.getCreatedAt() != null ? request.getCreatedAt() : Instant.now());
+            Set<PostImage> postImages = new HashSet<>();
+            for (String imageUrl : request.getImages()) {
+                PostImage postImage = new PostImage();
+                postImage.setImageUrl(imageUrl);
+                postImage.setPost(post);
+                postImages.add(postImage);
+            }
+            post.setImages(postImages);
+            Post savedPost = postRepository.save(post);
+            return new PostSummary(savedPost);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
