@@ -1,15 +1,13 @@
 package com.example.fixit.controller;
 
-import com.example.fixit.dto.CreatePostRequest;
+import com.example.fixit.dto.CreatePostRequestImages;
+import com.example.fixit.dto.CreatePostRequestUrl;
 import com.example.fixit.dto.PostSummary;
 import com.example.fixit.model.Post;
 import com.example.fixit.service.PostService;
-import jakarta.persistence.criteria.CriteriaBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @RestController
@@ -69,9 +67,14 @@ public class PostController {
         return postService.unSavePost(postId, userId);
     }
 
-    @PostMapping("/create-post")
-    public PostSummary createPost(@RequestBody CreatePostRequest request) {
+    @PostMapping("/create-post-urls")
+    public PostSummary createPost(@RequestBody CreatePostRequestUrl request) {
         return postService.createPost(request);
+    }
+
+    @PostMapping("create-post-images")
+    public PostSummary createPost(@RequestPart("requestImages") CreatePostRequestImages requestImages) {
+        return postService.createPost(requestImages);
     }
 
 }

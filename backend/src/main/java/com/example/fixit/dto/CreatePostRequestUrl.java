@@ -3,14 +3,14 @@ package com.example.fixit.dto;
 import java.time.Instant;
 import java.util.List;
 
-public class CreatePostRequest {
+public class CreatePostRequestUrl {
 
     private String description;
     private int user_id;
     private Instant createdAt;
     private List<String> images;
 
-    public CreatePostRequest(String description, int user_id, Instant createdAt, List<String> images) {
+    public CreatePostRequestUrl(String description, int user_id, Instant createdAt, List<String> images) {
         this.description = description;
         this.user_id = user_id;
         this.createdAt = createdAt;
