@@ -1,17 +1,17 @@
 package com.example.fixit.service;
 
-import com.example.fixit.dto.CreatePostRequest;
+import com.example.fixit.dto.CreatePostRequestImages;
+import com.example.fixit.dto.CreatePostRequestUrl;
 import com.example.fixit.dto.PostSummary;
 import com.example.fixit.model.Post;
 import com.example.fixit.model.PostImage;
 import com.example.fixit.model.User;
 import com.example.fixit.repository.UserRepository;
-import org.springframework.security.access.method.P;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.example.fixit.repository.PostRepository;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Instant;
 import java.util.HashSet;
@@ -27,6 +27,9 @@ public class PostService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private FileUploadService fileUploadService;
 
     public PostSummary getPostSummaryById(int postId) {
         try {
@@ -217,7 +220,7 @@ public class PostService {
         }
     }
 
-    public PostSummary createPost(@RequestBody CreatePostRequest request) {
+    public PostSummary createPost(CreatePostRequestUrl request) {
         try {
             Optional<User> optUser = userRepository.findById(request.getUser_id());
             User u;
@@ -243,6 +246,36 @@ public class PostService {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public PostSummary createPost(CreatePostRequestImages requestImages) {
+        try {
+            Optional<User> optUser = userRepository.findById(requestImages.getUser_id());
+            User u;
+            if (optUser.isPresent()) {
+                u = optUser.get();
+            } else {
+                throw new RuntimeException("user not found");
+            }
+            Post post = new Post();
+            post.setDescription(requestImages.getDescription());
+            post.setUser(u);
+            post.setCreatedAt(requestImages.getCreatedAt() != null ? requestImages.getCreatedAt() : Instant.now());
+            Set<PostImage> postImages = new HashSet<>();
+            for (MultipartFile image : requestImages.getImages()) {
+                String imageUrl = fileUploadService.uploadFile(image);
+                PostImage postImage = new PostImage();
+                postImage.setImageUrl(imageUrl);
+                postImage.setPost(post);
+                postImages.add(postImage);
+            }
+            post.setImages(postImages);
+            Post savedPost = postRepository.save(post);
+            return new PostSummary(savedPost);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
 }
