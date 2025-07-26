@@ -35,7 +35,6 @@ public class SecurityConfig {
                                 "/api/user/login",
                                 "/api/user/register/google/",
                                 "/api/user/login/google/",
-                                // Add these lines to allow public GET access to user info for testing
                                 "/api/user/**",
                                 "/api/follow/mutual/**",
                                 "/api/follow/**",
