@@ -7,7 +7,11 @@ import com.example.fixit.model.Post;
 import com.example.fixit.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @RestController
@@ -72,9 +76,22 @@ public class PostController {
         return postService.createPost(request);
     }
 
-    @PostMapping("create-post-images")
-    public PostSummary createPost(@RequestPart("requestImages") CreatePostRequestImages requestImages) {
-        return postService.createPost(requestImages);
+    @PostMapping(value = "/create-post-images", consumes = { "multipart/form-data" })
+    public PostSummary createPost(
+            @RequestParam("description") String description,
+            @RequestParam("user_id") int userId,
+            @RequestParam("createdAt") String createdAt,
+            @RequestParam(value = "requestImages", required = false) List<MultipartFile> images
+    ) {
+        List<MultipartFile> imageList = images != null ? images : new ArrayList<>();    //  empty?
+
+        CreatePostRequestImages request = new CreatePostRequestImages(
+                description,
+                userId,
+                Instant.parse(createdAt),
+                imageList
+        );
+        return postService.createPost(request);
     }
 
 }
