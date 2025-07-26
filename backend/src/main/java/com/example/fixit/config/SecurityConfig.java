@@ -1,11 +1,16 @@
 package com.example.fixit.config;
 
 import com.example.fixit.component.CustomAuthenticationSuccessHandler;
+import com.example.fixit.component.JwtAuthenticationFilter;
+import com.example.fixit.component.JwtAuthenticationEntryPoint;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -15,43 +20,45 @@ import java.util.Arrays;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
+    @Autowired
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    public SecurityConfig(CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler) {
-        this.customAuthenticationSuccessHandler = customAuthenticationSuccessHandler;
-    }
+    @Autowired
+    private CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
+
+    @Autowired
+    private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint; // Inject the entry point
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Permit public access to OAuth2 and login/register endpoints
                         .requestMatchers(
-                                "/oauth2/authorization/google",
-                                "/login/oauth2/code/google",
-                                "/api/user/register",
-                                "/api/user/register/",
-                                "/api/user/login",
-                                "/api/user/register/google/",
-                                "/api/user/login/google/",
-                                "/api/user/**",
-                                "/api/follow/mutual/**",
+                                "/oauth2/authorization/google",       // Google OAuth2 entry point
+                                "/login/oauth2/code/google",          // Google OAuth2 callback
+                                "/api/user/register",                 // Public registration
+                                "/api/user/login",                    // Public login
+                                "/api/user/register/google/",         // Google-specific registration
+                                "/api/user/login/google/",            // Google-specific login
+                                "/api/user/**",                       // User-related endpoints
+                                "/api/follow/mutual/**",              // Follow-related endpoints
                                 "/api/follow/**",
                                 "/api/follow",
-                                "/api/post/all-ids",
-                                "api/post/all-ids/",
-                                "/api/post/**"
-
+                                "/api/post/all-ids",                  // Post-related endpoints
+                                "/api/post/all-ids/",
+                                "/api/post/**",
+                                "/api/auth/refresh"                   // Token refresh endpoint
                         ).permitAll()
-                        // All other requests require authentication
-                        .anyRequest().authenticated()
+                        .anyRequest().authenticated()             // All other endpoints require authentication
                 )
                 .oauth2Login(oauth2 -> oauth2
-                        .successHandler(customAuthenticationSuccessHandler)
+                        .successHandler(customAuthenticationSuccessHandler) // Handle successful Google login
                 )
-                .csrf(csrf -> csrf.disable())
-                .logout(logout -> logout.logoutSuccessUrl("/"));
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint)) // Handle unauthorized requests
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class); // JWT filter
 
         return http.build();
     }

@@ -1,6 +1,7 @@
 package com.example.fixit.component;
 
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,19 +14,30 @@ import java.util.Date;
 public class JwtTokenProvider {
     private static final Logger logger = LoggerFactory.getLogger(JwtTokenProvider.class);
 
-    private final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
-    private final long validityInMilliseconds = 3600000; // 1 hour
+    private final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256); // Secure key for signing
+    private final long accessTokenValidity = 3600000; // 1 hour
+    private final long refreshTokenValidity = 604800000; // 7 days
 
-    // Existing createToken method
-    public String createToken(String username, int userId) {
+    // Generate access token
+    public String createAccessToken(String email, int userId) {
+        return createToken(email, userId, accessTokenValidity);
+    }
+
+    // Generate refresh token
+    public String createRefreshToken(String email, int userId) {
+        return createToken(email, userId, refreshTokenValidity);
+    }
+
+    // Common token creation logic
+    private String createToken(String email, int userId, long validity) {
         Date now = new Date();
-        Date validity = new Date(now.getTime() + validityInMilliseconds);
+        Date expiration = new Date(now.getTime() + validity);
 
         return Jwts.builder()
-                .setSubject(username)
+                .setSubject(email)
                 .claim("userId", userId)
                 .setIssuedAt(now)
-                .setExpiration(validity)
+                .setExpiration(expiration)
                 .signWith(key)
                 .compact();
     }
@@ -33,28 +45,21 @@ public class JwtTokenProvider {
     // Validate token
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder()
-                    .setSigningKey(key)
-                    .build()
-                    .parseClaimsJws(token);
+            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;
-        } catch (JwtException | IllegalArgumentException e) {
+        } catch (Exception e) {
             logger.error("Invalid JWT token: {}", e.getMessage());
             return false;
         }
     }
 
-    // Get username from token
-    public String getUsername(String token) {
+    // Get email from token
+    public String getEmail(String token) {
         try {
-            return Jwts.parserBuilder()
-                    .setSigningKey(key)
-                    .build()
-                    .parseClaimsJws(token)
-                    .getBody()
-                    .getSubject();
-        } catch (JwtException e) {
-            logger.error("Error extracting username from token: {}", e.getMessage());
+            return Jwts.parserBuilder().setSigningKey(key).build()
+                    .parseClaimsJws(token).getBody().getSubject();
+        } catch (Exception e) {
+            logger.error("Error extracting email: {}", e.getMessage());
             return null;
         }
     }
@@ -62,38 +67,11 @@ public class JwtTokenProvider {
     // Get userId from token
     public Integer getUserId(String token) {
         try {
-            Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(key)
-                    .build()
-                    .parseClaimsJws(token)
-                    .getBody();
-            return claims.get("userId", Integer.class);
-        } catch (JwtException e) {
-            logger.error("Error extracting userId from token: {}", e.getMessage());
+            return Jwts.parserBuilder().setSigningKey(key).build()
+                    .parseClaimsJws(token).getBody().get("userId", Integer.class);
+        } catch (Exception e) {
+            logger.error("Error extracting userId: {}", e.getMessage());
             return null;
         }
-    }
-
-    // Check if token is expired
-    public boolean isTokenExpired(String token) {
-        try {
-            Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(key)
-                    .build()
-                    .parseClaimsJws(token)
-                    .getBody();
-            return claims.getExpiration().before(new Date());
-        } catch (JwtException e) {
-            logger.error("Error checking token expiration: {}", e.getMessage());
-            return true;
-        }
-    }
-
-    public Key getKey() {
-        return key;
-    }
-
-    public long getValidityInMilliseconds() {
-        return validityInMilliseconds;
     }
 }
