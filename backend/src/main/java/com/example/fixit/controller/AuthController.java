@@ -9,6 +9,7 @@ import com.example.fixit.model.RefreshToken;
 import com.example.fixit.model.User;
 import com.example.fixit.repository.RefreshTokenRepository;
 import com.example.fixit.repository.UserRepository;
+import com.example.fixit.service.AuthService;
 import com.example.fixit.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -37,6 +38,9 @@ public class AuthController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private AuthService authService;
+
     @PostMapping("/login")
     public ResponseEntity<UserLoginResponse> login(@RequestBody UserLoginRequest loginRequest) {
         UserLoginResponse ulr = userService.loginUser(loginRequest);
@@ -44,8 +48,8 @@ public class AuthController {
         String accessToken = jwtTokenProvider.createAccessToken(ulr.getEmail(), ulr.getUserId());
         String refreshToken = jwtTokenProvider.createRefreshToken(ulr.getEmail(), ulr.getUserId());
 
-        ulr.setAccessToken(jwtTokenProvider.createAccessToken(ulr.getEmail(), ulr.getUserId()));
-        ulr.setRefreshToken(jwtTokenProvider.createRefreshToken(ulr.getEmail(), ulr.getUserId()));
+        ulr.setAccessToken(accessToken);
+        ulr.setRefreshToken(refreshToken);
 
         User user = userRepository.findByEmail(loginRequest.getEmail()).orElseThrow(() -> new RuntimeException("User not found"));
         RefreshToken refreshTokenEntity = new RefreshToken();
@@ -60,12 +64,12 @@ public class AuthController {
     }
 
     @PostMapping("/loginGoogle")
-    public ResponseEntity<UserLoginResponse> loginGoogle(@RequestBody UserLoginRequest loginRequest) {
-        //  TODO
+    public ResponseEntity<UserLoginResponse> loginGoogle(@RequestBody String googleId) {
+        return authService.loginGoogle(googleId);
     }
 
     @PostMapping("/refresh")
     public ResponseEntity<RefreshResponse> refreshToken(@RequestBody RefreshRequest refreshRequest) {
-        return refreshToken(refreshRequest);
+        return authService.refreshToken(refreshRequest);
     }
 }
