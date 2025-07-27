@@ -43,24 +43,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<UserLoginResponse> login(@RequestBody UserLoginRequest loginRequest) {
-        UserLoginResponse ulr = userService.loginUser(loginRequest);
-
-        String accessToken = jwtTokenProvider.createAccessToken(ulr.getEmail(), ulr.getUserId());
-        String refreshToken = jwtTokenProvider.createRefreshToken(ulr.getEmail(), ulr.getUserId());
-
-        ulr.setAccessToken(accessToken);
-        ulr.setRefreshToken(refreshToken);
-
-        User user = userRepository.findByEmail(loginRequest.getEmail()).orElseThrow(() -> new RuntimeException("User not found"));
-        RefreshToken refreshTokenEntity = new RefreshToken();
-        refreshTokenEntity.setToken(refreshToken);
-        refreshTokenEntity.setUser(user);
-        refreshTokenEntity.setExpiryDate(Instant.now().plus(7, ChronoUnit.DAYS));
-        refreshTokenRepository.save(refreshTokenEntity);
-
-        Boolean isGoogle = (user.getGoogleId() != null);
-        return ResponseEntity.ok(new UserLoginResponse(true, user.getName(), user.getEmail(), user.getProfilePic(), user.getUserId(), isGoogle, accessToken, refreshToken));
-
+        return authService.login(loginRequest);
     }
 
     @PostMapping("/loginGoogle")

@@ -10,6 +10,7 @@ import com.example.fixit.model.User;
 import com.example.fixit.repository.RefreshTokenRepository;
 import com.example.fixit.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -48,7 +49,8 @@ public class AuthService {
                 refreshTokenRepository.save(refreshTokenEntity);
                 return ResponseEntity.ok(new UserLoginResponse(true, user.getName(), user.getEmail(), user.getProfilePic(), user.getUserId(), false, accessToken, refreshToken));
             } else {
-                return ResponseEntity.ok(new UserLoginResponse(false, "", "", "", -1, false, "", ""));
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new UserLoginResponse(false, "", "", "", -1, false, "", ""));
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -56,7 +58,24 @@ public class AuthService {
     }
 
     public ResponseEntity<UserLoginResponse> loginGoogle(String googleId) {
-        //  TODO
+        try {
+            Optional<User> tempUser = userRepository.findByGoogleId(googleId.trim());
+            if (tempUser.isPresent()) {
+                User user = tempUser.get();
+                String accessToken = jwtTokenProvider.createAccessToken(user.getEmail(), user.getUserId());
+                String refreshToken = jwtTokenProvider.createRefreshToken(user.getEmail(), user.getUserId());
+                RefreshToken refreshTokenEntity = new RefreshToken();
+                refreshTokenEntity.setToken(refreshToken);
+                refreshTokenEntity.setUser(user);
+                refreshTokenEntity.setExpiryDate(Instant.now().plus(7, ChronoUnit.DAYS));
+                refreshTokenRepository.save(refreshTokenEntity);
+                return ResponseEntity.ok(new UserLoginResponse(true, user.getName(), user.getEmail(), user.getProfilePic(), user.getUserId(), true, accessToken, refreshToken));
+            }
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new UserLoginResponse(false, "Google user not found, please register first", "", "", -1, false, "", ""));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public ResponseEntity<RefreshResponse> refreshToken(RefreshRequest refreshRequest) {
@@ -69,6 +88,7 @@ public class AuthService {
         }
         User user = tokenEntity.getUser();
         String newAccessToken = jwtTokenProvider.createAccessToken(user.getEmail(), user.getUserId());
+
         return ResponseEntity.ok(new RefreshResponse(newAccessToken));
     }
 
