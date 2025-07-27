@@ -62,38 +62,6 @@ public class AuthController {
 
     }
 
-//    @PostMapping("/login")
-//    public ResponseEntity<String> login(@RequestBody UserLoginRequest loginRequest) {
-//        User user = userRepository.findByEmail(loginRequest.getEmail())
-//                .orElseThrow(() -> new RuntimeException("User not found"));
-//        String token = jwtTokenProvider.createAccessToken(loginRequest.getEmail(), user.getUserId());
-//        return ResponseEntity.ok(token); // Return just access token for now
-//    }
-
-//    @PostMapping("/login")
-//    public ResponseEntity<UserLoginResponse> login(@RequestBody UserLoginRequest loginRequest) {
-//        Authentication auth = authenticationManager.authenticate(
-//                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
-//
-//        String email = (String) auth.getPrincipal();
-//        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
-//        int userId = user.getUserId();
-//
-//        // Generate tokens
-//        String accessToken = jwtTokenProvider.createAccessToken(email, userId);
-//        String refreshToken = jwtTokenProvider.createRefreshToken(email, userId);
-//
-//        // Save refresh token
-//        RefreshToken refreshTokenEntity = new RefreshToken();
-//        refreshTokenEntity.setToken(refreshToken);
-//        refreshTokenEntity.setUser(user);
-//        refreshTokenEntity.setExpiryDate(Instant.now().plus(7, ChronoUnit.DAYS));
-//        refreshTokenRepository.save(refreshTokenEntity);
-//
-//        Boolean isGoogle = (user.getGoogleId() != null);
-//        return ResponseEntity.ok(new UserLoginResponse(true, user.getName(), user.getEmail(), user.getProfilePic(), user.getUserId(), isGoogle, accessToken, refreshToken));
-//    }
-
     @PostMapping("/refresh")
     public ResponseEntity<RefreshResponse> refreshToken(@RequestBody RefreshRequest refreshRequest) {
         String refreshToken = refreshRequest.getRefreshToken();
