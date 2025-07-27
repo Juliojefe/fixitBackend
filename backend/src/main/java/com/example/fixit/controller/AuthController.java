@@ -26,9 +26,6 @@ import java.time.temporal.ChronoUnit;
 public class AuthController {
 
     @Autowired
-    private AuthenticationManager authenticationManager;
-
-    @Autowired
     private JwtTokenProvider jwtTokenProvider;
 
     @Autowired
@@ -60,6 +57,11 @@ public class AuthController {
         Boolean isGoogle = (user.getGoogleId() != null);
         return ResponseEntity.ok(new UserLoginResponse(true, user.getName(), user.getEmail(), user.getProfilePic(), user.getUserId(), isGoogle, accessToken, refreshToken));
 
+    }
+
+    @PostMapping("/loginGoogle")
+    public ResponseEntity<UserLoginResponse> loginGoogle(@RequestBody UserLoginRequest loginRequest) {
+        //  TODO
     }
 
     @PostMapping("/refresh")
