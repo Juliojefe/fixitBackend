@@ -163,10 +163,10 @@ public class UserService {
             if (tempUser.isPresent() && passwordEncoder.matches(request.getPassword(), tempUser.get().getPassword())) {
                 logger.info("User with email {} logged in successfully", request.getEmail());
                 User user = tempUser.get();
-                return new UserLoginResponse(true, user.getName(), user.getEmail(), user.getProfilePic(), user.getUserId(), false);
+                return new UserLoginResponse(true, user.getName(), user.getEmail(), user.getProfilePic(), user.getUserId(), false, "", "");
             } else {
                 logger.warn("Authentication failed for email {}: Incorrect email or password", request.getEmail());
-                return new UserLoginResponse(false, "", "", "", -1, false);
+                return new UserLoginResponse(false, "", "", "", -1, false, "", "");
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -178,9 +178,9 @@ public class UserService {
             Optional<User> tempUser = userRepository.findByGoogleId(googleId.trim());
             if (tempUser.isPresent()) {
                 User user = tempUser.get();
-                return new UserLoginResponse(true, user.getName(), user.getEmail(), user.getProfilePic(), user.getUserId(), true);
+                return new UserLoginResponse(true, user.getName(), user.getEmail(), user.getProfilePic(), user.getUserId(), true, "", "");
             }
-            return new UserLoginResponse(false, "Google user not found, please register first", "", "", -1, false);
+            return new UserLoginResponse(false, "Google user not found, please register first", "", "", -1, false, "", "");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
