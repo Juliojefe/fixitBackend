@@ -66,19 +66,6 @@ public class AuthController {
 
     @PostMapping("/refresh")
     public ResponseEntity<RefreshResponse> refreshToken(@RequestBody RefreshRequest refreshRequest) {
-        String refreshToken = refreshRequest.getRefreshToken();
-
-        // Validate refresh token
-        RefreshToken tokenEntity = refreshTokenRepository.findByToken(refreshToken).orElseThrow(() -> new RuntimeException("Invalid refresh token"));
-
-        if (tokenEntity.getExpiryDate().isBefore(Instant.now())) {
-            refreshTokenRepository.deleteByToken(refreshToken);
-            throw new RuntimeException("Refresh token expired");
-        }
-
-        User user = tokenEntity.getUser();
-        String newAccessToken = jwtTokenProvider.createAccessToken(user.getEmail(), user.getUserId());
-
-        return ResponseEntity.ok(new RefreshResponse(newAccessToken));
+        return refreshToken(refreshRequest);
     }
 }
