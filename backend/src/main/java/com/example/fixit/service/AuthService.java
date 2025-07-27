@@ -1,10 +1,7 @@
 package com.example.fixit.service;
 
 import com.example.fixit.component.JwtTokenProvider;
-import com.example.fixit.dto.RefreshRequest;
-import com.example.fixit.dto.RefreshResponse;
-import com.example.fixit.dto.UserLoginRequest;
-import com.example.fixit.dto.UserLoginResponse;
+import com.example.fixit.dto.*;
 import com.example.fixit.model.RefreshToken;
 import com.example.fixit.model.User;
 import com.example.fixit.repository.RefreshTokenRepository;
@@ -34,6 +31,13 @@ public class AuthService {
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
+    public ResponseEntity<UserRegisterResponse> register(UserRegisterRequest request) {
+        //  TODO
+    }
+
+    public UserRegisterResponse googleRegister(GoogleUserRegisterRequest request) {
+        //  TODO
+    }
 
     public ResponseEntity<UserLoginResponse> login(UserLoginRequest loginRequest) {
         try {

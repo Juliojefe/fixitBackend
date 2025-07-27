@@ -1,10 +1,7 @@
 package com.example.fixit.controller;
 
 import com.example.fixit.component.JwtTokenProvider;
-import com.example.fixit.dto.RefreshRequest;
-import com.example.fixit.dto.RefreshResponse;
-import com.example.fixit.dto.UserLoginRequest;
-import com.example.fixit.dto.UserLoginResponse;
+import com.example.fixit.dto.*;
 import com.example.fixit.model.RefreshToken;
 import com.example.fixit.model.User;
 import com.example.fixit.repository.RefreshTokenRepository;
@@ -36,17 +33,24 @@ public class AuthController {
     private RefreshTokenRepository refreshTokenRepository;
 
     @Autowired
-    private UserService userService;
-
-    @Autowired
     private AuthService authService;
 
-    @PostMapping("/login")
+    @PostMapping("/register")
+    public ResponseEntity<UserRegisterResponse> register(@RequestBody UserRegisterRequest request) {
+        return authService.register(request);
+    }
+
+    @PatchMapping("/register/google/")
+    public UserRegisterResponse googleRegister(@RequestBody GoogleUserRegisterRequest request) {
+        return authService.googleRegister(request);
+    }
+
+        @PostMapping("/login")
     public ResponseEntity<UserLoginResponse> login(@RequestBody UserLoginRequest loginRequest) {
         return authService.login(loginRequest);
     }
 
-    @PostMapping("/loginGoogle")
+    @PostMapping("/login/google")
     public ResponseEntity<UserLoginResponse> loginGoogle(@RequestBody String googleId) {
         return authService.loginGoogle(googleId);
     }
