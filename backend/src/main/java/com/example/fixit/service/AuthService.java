@@ -2,8 +2,7 @@ package com.example.fixit.service;
 
 import com.example.fixit.component.JwtTokenProvider;
 import com.example.fixit.dto.*;
-import com.example.fixit.model.RefreshToken;
-import com.example.fixit.model.User;
+import com.example.fixit.model.*;
 import com.example.fixit.repository.RefreshTokenRepository;
 import com.example.fixit.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.HashSet;
 import java.util.Optional;
 
 @Service
@@ -32,7 +32,58 @@ public class AuthService {
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     public ResponseEntity<UserRegisterResponse> register(UserRegisterRequest request) {
-        //  TODO
+        try {
+            Optional<User> tempUser = userRepository.findByEmail(request.getEmail().trim());
+            if (tempUser.isPresent()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new UserRegisterResponse(false, "Email already in use", "", "", -1, false, "", ""));
+            }
+            if (!isValidPassword(request.getPassword())) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new UserRegisterResponse(
+                                false,
+                                "Invalid password:\n• At least 8 characters long\n• At least one uppercase letter\n• At least one lowercase letter\n• At least one number\n• At least one special character",
+                                "", "", -1, false, "", ""));
+            }
+            if (!request.getEmail().trim().contains("@") || request.getEmail().trim().length() < 4) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new UserRegisterResponse(false, "Invalid email", "", "", -1, false,  "", ""));
+            }
+            String[] name = request.getName().trim().split("\\s+");
+            if (name.length != 2 || name[0].length() < 2 || name[1].length() < 2) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new UserRegisterResponse(false, "Invalid first or last name", "", "", -1, false, "", ""));
+            }
+            User newUser = new User();
+            newUser.setEmail(request.getEmail().trim());
+            newUser.setProfilePic(request.getProfilePic().trim());
+            newUser.setName(request.getName().trim());
+            newUser.setPassword(passwordEncoder.encode(request.getPassword()).trim());
+            newUser.setGoogleId(null);
+            newUser.setChats(new HashSet<Chat>());
+            newUser.setFollowing(new HashSet<User>());
+            newUser.setFollowers(new HashSet<User>());
+            newUser.setSavedPosts(new HashSet<Post>());
+            newUser.setLikedPosts(new HashSet<Post>());
+            newUser.setOwnedPosts(new HashSet<Post>());
+            UserRoles userRoles = new UserRoles();
+            userRoles.setUser(newUser);
+            userRoles.setIsAdmin(false);
+            userRoles.setIsMechanic(false);
+            newUser.setUserRoles(userRoles);
+            userRepository.save(newUser);
+            String accessToken = jwtTokenProvider.createAccessToken(newUser.getEmail(), newUser.getUserId());
+            String refreshToken = jwtTokenProvider.createRefreshToken(newUser.getEmail(), newUser.getUserId());
+            RefreshToken refreshTokenEntity = new RefreshToken();
+            refreshTokenEntity.setToken(refreshToken);
+            refreshTokenEntity.setUser(newUser);
+            refreshTokenEntity.setExpiryDate(Instant.now().plus(7, ChronoUnit.DAYS));
+            refreshTokenRepository.save(refreshTokenEntity);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new UserRegisterResponse(true, newUser.getName(), newUser.getEmail(), newUser.getProfilePic(), newUser.getUserId(), false, accessToken, refreshToken));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public UserRegisterResponse googleRegister(GoogleUserRegisterRequest request) {
