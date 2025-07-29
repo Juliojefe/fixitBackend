@@ -10,8 +10,6 @@ public class UserRegisterResponse {
     private String accessToken;
     private String refreshToken;
 
-    public UserRegisterResponse() {}
-
     public UserRegisterResponse(boolean success, String name, String email, String profilePic, int userId, boolean isGoogle, String accessToken, String refreshToken) {
         this.success = success;
         this.name = name;

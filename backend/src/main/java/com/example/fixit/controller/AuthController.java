@@ -41,7 +41,7 @@ public class AuthController {
     }
 
     @PatchMapping("/register/google/")
-    public UserRegisterResponse googleRegister(@RequestBody GoogleUserRegisterRequest request) {
+    public ResponseEntity<UserRegisterResponse> googleRegister(@RequestBody GoogleUserRegisterRequest request) {
         return authService.googleRegister(request);
     }
 
