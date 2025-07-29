@@ -3,10 +3,12 @@ package com.example.fixit.component;
 import com.example.fixit.dto.GoogleUserRegisterRequest;
 import com.example.fixit.dto.UserLoginResponse;
 import com.example.fixit.dto.UserRegisterResponse;
+import com.example.fixit.service.AuthService;
 import com.example.fixit.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -21,7 +23,7 @@ import java.nio.charset.StandardCharsets;
 public class CustomAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 
     @Autowired
-    private UserService userService;
+    private AuthService authService;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
@@ -38,14 +40,18 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
             throw new IllegalArgumentException("Missing required attributes: email and/or name");
         }
 
-        UserLoginResponse loginResponse = userService.loginUserWithGoogle(googleId);
-        if (loginResponse.isSuccess()) {
+        ResponseEntity<UserLoginResponse> loginEntity = authService.loginGoogle(googleId);
+        UserLoginResponse loginResponse = loginEntity.getBody();
+
+        if (loginEntity.getStatusCode().is2xxSuccessful() && loginResponse != null && loginResponse.isSuccess()) {
             writeResponse(response, loginResponse);
         } else {
             GoogleUserRegisterRequest registerRequest = new GoogleUserRegisterRequest(googleId, email, name, profilePic);
-            UserRegisterResponse registerResponse = userService.registerUserWithGoogle(registerRequest);
+            ResponseEntity<UserRegisterResponse> registerEntity = authService.googleRegister(registerRequest);
+            UserRegisterResponse registerResponse = registerEntity.getBody();
             writeResponse(response, registerResponse);
         }
+
     }
 
     private void writeResponse(HttpServletResponse response, Object data) throws IOException {
