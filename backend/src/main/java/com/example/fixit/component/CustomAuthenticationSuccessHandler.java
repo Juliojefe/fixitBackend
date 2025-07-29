@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.rmi.server.ExportException;
 
 @Component
 public class CustomAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
@@ -40,7 +41,7 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
             throw new IllegalArgumentException("Missing required attributes: email and/or name");
         }
 
-        ResponseEntity<UserLoginResponse> loginEntity = authService.loginGoogle(googleId);
+        ResponseEntity<UserLoginResponse> loginEntity = authService.googleLogin(googleId);
         UserLoginResponse loginResponse = loginEntity.getBody();
 
         if (loginEntity.getStatusCode().is2xxSuccessful() && loginResponse != null && loginResponse.isSuccess()) {
@@ -60,27 +61,30 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
 
         if (data instanceof UserLoginResponse) {
             UserLoginResponse loginResponse = (UserLoginResponse) data;
-            redirectUrl = String.format("%s?success=%b&userId=%d&name=%s&email=%s&profilePic=%s&isGoogle=%b",
+            redirectUrl = String.format("%s?success=%b&userId=%d&name=%s&email=%s&profilePic=%s&isGoogle=%b&accessToken=%s&refreshToken=%s",
                     baseUrl,
                     loginResponse.isSuccess(),
                     loginResponse.getUserId(),
                     URLEncoder.encode(loginResponse.getName(), StandardCharsets.UTF_8),
                     URLEncoder.encode(loginResponse.getEmail(), StandardCharsets.UTF_8),
                     URLEncoder.encode(loginResponse.getProfilePic() != null ? loginResponse.getProfilePic() : "", StandardCharsets.UTF_8),
-                    loginResponse.isGoogle());
+                    loginResponse.isGoogle(),
+                    URLEncoder.encode(loginResponse.getAccessToken() != null ? loginResponse.getAccessToken() : "", StandardCharsets.UTF_8),
+                    URLEncoder.encode(loginResponse.getRefreshToken() != null ? loginResponse.getRefreshToken() : "", StandardCharsets.UTF_8));
         } else if (data instanceof UserRegisterResponse) {
             UserRegisterResponse registerResponse = (UserRegisterResponse) data;
-            redirectUrl = String.format("%s?success=%b&userId=%d&name=%s&email=%s&profilePic=%s&isGoogle=%b",
+            redirectUrl = String.format("%s?success=%b&userId=%d&name=%s&email=%s&profilePic=%s&isGoogle=%b&accessToken=%s&refreshToken=%s",
                     baseUrl,
                     registerResponse.isSuccess(),
                     registerResponse.getUserId(),
                     URLEncoder.encode(registerResponse.getName(), StandardCharsets.UTF_8),
                     URLEncoder.encode(registerResponse.getEmail(), StandardCharsets.UTF_8),
                     URLEncoder.encode(registerResponse.getProfilePic() != null ? registerResponse.getProfilePic() : "", StandardCharsets.UTF_8),
-                    registerResponse.isGoogle());
+                    registerResponse.isGoogle(),
+                    URLEncoder.encode(registerResponse.getAccessToken() != null ? registerResponse.getAccessToken() : "", StandardCharsets.UTF_8),
+                    URLEncoder.encode(registerResponse.getRefreshToken() != null ? registerResponse.getRefreshToken() : "", StandardCharsets.UTF_8));
         } else {
-            throw new IllegalArgumentException("Unsupported response type");
-        }
+            throw new IllegalArgumentException("Unsupported response type");        }
         response.sendRedirect(redirectUrl);
     }
 }

@@ -10,7 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -93,6 +92,12 @@ public class AuthService {
                         .body(new UserRegisterResponse(false, "Email already in use", "", "", -1, false, "", ""));
             }
 
+            Optional<User> googleUser = userRepository.findByGoogleId(request.getGoogleId().trim());
+            if (googleUser.isPresent()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new UserRegisterResponse(false, "Google ID already registered", "", "", -1, false, "", ""));
+            }
+
             if (!request.getEmail().trim().contains("@") || request.getEmail().trim().length() < 4) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(new UserRegisterResponse(false, "Invalid email", "", "", -1, false, "", ""));
@@ -156,7 +161,7 @@ public class AuthService {
         }
     }
 
-    public ResponseEntity<UserLoginResponse> loginGoogle(String googleId) {
+    public ResponseEntity<UserLoginResponse> googleLogin(String googleId) {
         try {
             Optional<User> tempUser = userRepository.findByGoogleId(googleId.trim());
             if (tempUser.isPresent()) {

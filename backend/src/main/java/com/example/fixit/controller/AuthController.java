@@ -51,8 +51,8 @@ public class AuthController {
     }
 
     @PostMapping("/login/google")
-    public ResponseEntity<UserLoginResponse> loginGoogle(@RequestBody String googleId) {
-        return authService.loginGoogle(googleId);
+    public ResponseEntity<UserLoginResponse> googleLogin(@RequestBody String googleId) {
+        return authService.googleLogin(googleId);
     }
 
     @PostMapping("/refresh")
