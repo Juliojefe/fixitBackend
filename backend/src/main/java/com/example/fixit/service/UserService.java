@@ -39,7 +39,7 @@ public class UserService {
         try {
             Optional<User> tempUser = userRepository.findByEmail(request.getEmail().trim());
             if (tempUser.isPresent()) {
-                return new UserRegisterResponse(false, "Email already in use", "", "", -1, false);
+                return new UserRegisterResponse(false, "Email already in use", "", "", -1, false, "", "");
             }
 
             if (!isValidPassword(request.getPassword())) {
@@ -49,17 +49,19 @@ public class UserService {
                         "",
                         "",
                         -1,
-                        false
+                        false,
+                        "",
+                        ""
                 );
             }
 
             if (!request.getEmail().trim().contains("@") || request.getEmail().trim().length() < 4) {
-                return new UserRegisterResponse(false, "Invalid email", "", "", -1, false);
+                return new UserRegisterResponse(false, "Invalid email", "", "", -1, false, "", "");
             }
 
             String[] name = request.getName().trim().split("\\s+");
             if (name.length != 2 || name[0].length() < 2 || name[1].length() < 2) {
-                return new UserRegisterResponse(false, "Invalid first or last name", "", "", -1, false);
+                return new UserRegisterResponse(false, "Invalid first or last name", "", "", -1, false, "", "");
             }
             
             User newUser = new User();
@@ -89,7 +91,7 @@ public class UserService {
 
             logger.info("User with email {} registered successfully", request.getEmail());
             return new UserRegisterResponse(true, newUser.getName(),
-                    newUser.getEmail(), newUser.getProfilePic(), newUser.getUserId(), false);
+                    newUser.getEmail(), newUser.getProfilePic(), newUser.getUserId(), false, "", "");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -101,16 +103,16 @@ public class UserService {
             Optional<User> tempUser = userRepository.findByEmail(request.getEmail().trim());
             if (tempUser.isPresent()) {
                 logger.warn("Registration failed: User with email {} already exists", request.getEmail());
-                return new UserRegisterResponse(false, "Email already in use", "", "", -1, false);
+                return new UserRegisterResponse(false, "Email already in use", "", "", -1, false, "", "");
             }
 
             if (!request.getEmail().trim().contains("@") || request.getEmail().trim().length() < 4) {
-                return new UserRegisterResponse(false, "Invalid email", "", "", -1, false);
+                return new UserRegisterResponse(false, "Invalid email", "", "", -1, false, "", "");
             }
 
             String[] name = request.getName().trim().split("\\s+");
             if (name.length != 2 || name[0].length() < 2 || name[1].length() < 2) {
-                return new UserRegisterResponse(false, "Invalid first or last name", "", "", -1, false);
+                return new UserRegisterResponse(false, "Invalid first or last name", "", "", -1, false, "", "");
             }
 
             User newUser = new User();
@@ -139,7 +141,7 @@ public class UserService {
             userRepository.save(newUser);
             logger.info("User with email {} registered successfully via Google", request.getEmail());
             return new UserRegisterResponse(true, newUser.getName(), newUser.getEmail(),
-                    newUser.getProfilePic(), newUser.getUserId(), true);
+                    newUser.getProfilePic(), newUser.getUserId(), true, "", "");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
