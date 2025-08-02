@@ -63,7 +63,7 @@ public class PostController {
     }
 
     @DeleteMapping("/unlike-post/{postId}/{userId}")
-    public boolean unlikePost(@PathVariable("postId") int postId, @PathVariable("userId") int userId) {
+    public ResponseEntity<Boolean> unlikePost(@PathVariable("postId") int postId, @PathVariable("userId") int userId) {
         return postService.unlikePost(postId, userId);
     }
 

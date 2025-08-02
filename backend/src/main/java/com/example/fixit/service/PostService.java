@@ -175,7 +175,7 @@ public class PostService {
         }
     }
 
-    public boolean unlikePost(int postId, int userId) {
+    public ResponseEntity<Boolean> unlikePost(int postId, int userId) {
         try {
             Optional<Post> optPost = postRepository.findById(postId);
             Optional<User> optUser = userRepository.findById(userId);
@@ -187,14 +187,14 @@ public class PostService {
                     u.getLikedPosts().remove(p);
                     postRepository.save(p);
                     userRepository.save(u);
-                    return true;   //  already liked, now unlike
+                    return ResponseEntity.ok(true);   //  already liked, now unlike
                 }
-                return false;    //  cannot unlike what has not been liked
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);   //  cannot unlike what has not been liked
             } else {
-                return false;   //  one or the other does not exist
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);   //  one or the other does not exist
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
