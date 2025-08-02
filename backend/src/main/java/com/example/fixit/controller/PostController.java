@@ -68,7 +68,7 @@ public class PostController {
     }
 
     @DeleteMapping("/unSave-post/{postId}/{userId}")
-    public boolean unSavePost(@PathVariable("postId") int postId, @PathVariable("userId") int userId) {
+    public ResponseEntity<Boolean> unSavePost(@PathVariable("postId") int postId, @PathVariable("userId") int userId) {
         return postService.unSavePost(postId, userId);
     }
 
