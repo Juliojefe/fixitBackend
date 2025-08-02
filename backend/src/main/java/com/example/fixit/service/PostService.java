@@ -12,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.example.fixit.repository.PostRepository;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Instant;
@@ -43,7 +42,7 @@ public class PostService {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new PostSummary());
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
@@ -130,7 +129,7 @@ public class PostService {
         }
     }
 
-    public boolean likePost(int postId, int userId) {
+    public ResponseEntity<Boolean> likePost(int postId, int userId) {
         try {
             Optional<Post> optPost = postRepository.findById(postId);
             Optional<User> optUser = userRepository.findById(userId);
@@ -138,18 +137,18 @@ public class PostService {
                 Post p = optPost.get();
                 User u = optUser.get();
                 if (p.getLikers().contains(u) || u.getLikedPosts().contains(p)) {
-                    return false;   //  already liked, no double liking
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);   //  already liked, no double liking
                 }
                 p.getLikers().add(u);
                 u.getLikedPosts().add(p);
                 postRepository.save(p);
                 userRepository.save(u);
-                return true;    //  both exist, post has not been previously liked and can now be liked
+                return ResponseEntity.ok(true);    //  both exist, post has not been previously liked and can now be liked
             } else {
-                return false;   //  one or the other does not exist
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);   //  one or the other does not exist
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 

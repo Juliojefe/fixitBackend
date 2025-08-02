@@ -53,7 +53,7 @@ public class PostController {
     }
 
     @PostMapping("/like-post/{postId}/{userId}")
-    public boolean likePost(@PathVariable("postId") int postId, @PathVariable("userId") int userId) {
+    public ResponseEntity<Boolean> likePost(@PathVariable("postId") int postId, @PathVariable("userId") int userId) {
         return postService.likePost(postId, userId);
     }
 
