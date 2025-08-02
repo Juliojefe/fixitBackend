@@ -23,7 +23,7 @@ public class PostController {
     private PostService postService;
 
     @GetMapping("/{id}")
-    public PostSummary getPostById(@PathVariable("id") int postId) {
+    public ResponseEntity<PostSummary> getPostById(@PathVariable("id") int postId) {
         return postService.getPostSummaryById(postId);
     }
 

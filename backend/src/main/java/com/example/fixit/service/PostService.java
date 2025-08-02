@@ -7,6 +7,7 @@ import com.example.fixit.model.Post;
 import com.example.fixit.model.PostImage;
 import com.example.fixit.model.User;
 import com.example.fixit.repository.UserRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,14 +33,14 @@ public class PostService {
     @Autowired
     private FileUploadService fileUploadService;
 
-    public PostSummary getPostSummaryById(int postId) {
+    public ResponseEntity<PostSummary> getPostSummaryById(int postId) {
         try {
             Optional<Post> OptPost = postRepository.findById(postId);
             if (OptPost.isPresent()) {
                 Post p = OptPost.get();
-                return new PostSummary(p);
+                return ResponseEntity.ok(new PostSummary(p));
             } else {
-                return new PostSummary();
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new PostSummary());
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
