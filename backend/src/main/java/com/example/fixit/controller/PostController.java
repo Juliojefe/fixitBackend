@@ -6,6 +6,7 @@ import com.example.fixit.dto.PostSummary;
 import com.example.fixit.model.Post;
 import com.example.fixit.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,7 +33,7 @@ public class PostController {
     }
 
     @GetMapping("/all-ids")
-    public Set<Integer> getAllPostIds() {
+    public ResponseEntity<Set<Integer>> getAllPostIds() {
         return postService.getAllPostIds();
     }
 

@@ -7,6 +7,7 @@ import com.example.fixit.model.Post;
 import com.example.fixit.model.PostImage;
 import com.example.fixit.model.User;
 import com.example.fixit.repository.UserRepository;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.example.fixit.repository.PostRepository;
@@ -58,14 +59,14 @@ public class PostService {
         }
     }
 
-    public Set<Integer> getAllPostIds() {
+    public ResponseEntity<Set<Integer>> getAllPostIds() {
         try {
             List<Post> allPosts = postRepository.findAll();
             Set<Integer> ids = new HashSet<>();
             for (Post p : allPosts) {
                 ids.add(p.getPostId());
             }
-            return ids;
+            return ResponseEntity.ok(ids);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
