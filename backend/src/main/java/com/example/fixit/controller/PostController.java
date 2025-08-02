@@ -7,6 +7,7 @@ import com.example.fixit.model.Post;
 import com.example.fixit.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -52,24 +53,45 @@ public class PostController {
         return postService.getSavedPostsByUserId(userId);
     }
 
-    @PostMapping("/like-post/{postId}/{userId}")
-    public ResponseEntity<Boolean> likePost(@PathVariable("postId") int postId, @PathVariable("userId") int userId) {
-        return postService.likePost(postId, userId);
+    @PostMapping("/{postId}/like")
+    public ResponseEntity<Void> likePost(@PathVariable int postId, Authentication authentication) {
+        // Extract the user's ID from the token's claims
+        int userId = getUserIdFromAuthentication(authentication);
+        postService.likePost(postId, userId);
+        return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/save-post/{postId}/{userId}")
-    public ResponseEntity<Boolean> savePost(@PathVariable("postId") int postId, @PathVariable("userId") int userId) {
-        return postService.savePost(postId, userId);
+    @PostMapping("/{postId}/save")
+    public ResponseEntity<Void> savePost(@PathVariable int postId, Authentication authentication) {
+        int userId = getUserIdFromAuthentication(authentication);
+        postService.savePost(postId, userId);
+        return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/unlike-post/{postId}/{userId}")
-    public ResponseEntity<Boolean> unlikePost(@PathVariable("postId") int postId, @PathVariable("userId") int userId) {
-        return postService.unlikePost(postId, userId);
+    @DeleteMapping("/{postId}/like")
+    public ResponseEntity<Void> unlikePost(@PathVariable int postId, Authentication authentication) {
+        int userId = getUserIdFromAuthentication(authentication);
+        postService.unlikePost(postId, userId);
+        return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/unSave-post/{postId}/{userId}")
-    public ResponseEntity<Boolean> unSavePost(@PathVariable("postId") int postId, @PathVariable("userId") int userId) {
-        return postService.unSavePost(postId, userId);
+    @DeleteMapping("/{postId}/save")
+    public ResponseEntity<Void> unSavePost(@PathVariable int postId, Authentication authentication) {
+        int userId = getUserIdFromAuthentication(authentication);
+        postService.unSavePost(postId, userId);
+        return ResponseEntity.ok().build();
+    }
+
+    //  Helper method to safely extract the user ID from the Authentication object.
+    private int getUserIdFromAuthentication(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new SecurityException("User is not authenticated.");
+        }
+        if (authentication.getPrincipal() instanceof org.springframework.security.oauth2.jwt.Jwt) {
+            org.springframework.security.oauth2.jwt.Jwt jwt = (org.springframework.security.oauth2.jwt.Jwt) authentication.getPrincipal();
+            return jwt.getClaim("userId");
+        }
+        throw new IllegalArgumentException("Cannot determine user ID from authentication token.");
     }
 
     @PostMapping("/create-post-urls")
