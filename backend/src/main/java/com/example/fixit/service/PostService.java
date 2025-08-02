@@ -152,7 +152,7 @@ public class PostService {
         }
     }
 
-    public boolean savePost(int postId, int userId) {
+    public ResponseEntity<Boolean> savePost(int postId, int userId) {
         try {
             Optional<Post> optPost = postRepository.findById(postId);
             Optional<User> optUser = userRepository.findById(userId);
@@ -160,19 +160,18 @@ public class PostService {
                 Post p = optPost.get();
                 User u = optUser.get();
                 if (p.getSavers().contains(u) || u.getSavedPosts().contains(p)) {
-                    return false;   //  already saved, no double saving
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);   //  already saved, no double saving
                 }
                 p.getSavers().add(u);
                 u.getSavedPosts().add(p);
                 postRepository.save(p);
                 userRepository.save(u);
-                return true;    //  both exist, post has not been previously saved and can now be saved
+                return ResponseEntity.ok(true);  //  both exist, post has not been previously saved and can now be saved
             } else {
-                return false;   //  one or the other does not exist
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);  //  one or the other does not exist
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);        }
     }
 
     public ResponseEntity<Boolean> unlikePost(int postId, int userId) {

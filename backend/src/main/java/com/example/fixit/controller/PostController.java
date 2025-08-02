@@ -58,7 +58,7 @@ public class PostController {
     }
 
     @PostMapping("/save-post/{postId}/{userId}")
-    public boolean savePost(@PathVariable("postId") int postId, @PathVariable("userId") int userId) {
+    public ResponseEntity<Boolean> savePost(@PathVariable("postId") int postId, @PathVariable("userId") int userId) {
         return postService.savePost(postId, userId);
     }
 
