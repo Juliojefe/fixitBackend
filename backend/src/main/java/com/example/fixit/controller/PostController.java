@@ -5,6 +5,8 @@ import com.example.fixit.dto.CreatePostRequestUrl;
 import com.example.fixit.dto.PostSummary;
 import com.example.fixit.model.Post;
 import com.example.fixit.service.PostService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -16,12 +18,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @RestController
 @RequestMapping("api/post")
 public class PostController {
 
     @Autowired
     private PostService postService;
+
+    private static final Logger log = LoggerFactory.getLogger(PostController.class);
 
     @GetMapping("/{id}")
     public ResponseEntity<PostSummary> getPostById(@PathVariable("id") int postId) {

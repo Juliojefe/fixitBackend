@@ -15,6 +15,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -29,7 +32,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         String token = getTokenFromRequest(request);
 
-        if (token != null && tokenProvider.validateToken(token)) {
+        boolean isValid = tokenProvider.validateToken(token);
+        if (token != null && isValid) {
             String username = tokenProvider.getEmail(token);
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
@@ -41,6 +45,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         filterChain.doFilter(request, response);
     }
+
 
     private String getTokenFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
