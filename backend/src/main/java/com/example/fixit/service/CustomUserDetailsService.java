@@ -32,6 +32,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 authorities.add(new SimpleGrantedAuthority("ROLE_MECHANIC"));
             }
         }
-        return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), authorities);
+        String password = user.getPassword() != null ? user.getPassword() : "";
+        return new org.springframework.security.core.userdetails.User(user.getEmail(), password, authorities);
     }
 }

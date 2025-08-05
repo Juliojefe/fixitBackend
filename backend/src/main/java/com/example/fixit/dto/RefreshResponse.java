@@ -5,6 +5,5 @@ public class RefreshResponse {
     public RefreshResponse(String accessToken) {
         this.accessToken = accessToken;
     }
-    // Getter
     public String getAccessToken() { return accessToken; }
 }

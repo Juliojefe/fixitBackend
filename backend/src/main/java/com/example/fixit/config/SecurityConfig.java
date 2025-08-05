@@ -3,6 +3,7 @@ package com.example.fixit.config;
 import com.example.fixit.component.CustomAuthenticationSuccessHandler;
 import com.example.fixit.component.JwtAuthenticationFilter;
 import com.example.fixit.component.JwtAuthenticationEntryPoint;
+import jakarta.servlet.DispatcherType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,7 +32,7 @@ public class SecurityConfig {
     private CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
 
     @Autowired
-    private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint; // Inject the entry point
+    private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -40,29 +41,21 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll()
                         .requestMatchers(
-                                "/oauth2/authorization/google",       // Google OAuth2 entry point
-                                "/login/oauth2/code/google",          // Google OAuth2 callback
-                                "/api/user/register",                 // Public registration
-                                "/api/auth/login",                    // Corrected login endpoint
-                                "/api/user/register/google/",         // Google-specific registration
-                                "/api/user/login/google/",            // Google-specific login
-                                "/api/user/**",                       // User-related endpoints
-                                "/api/follow/mutual/**",              // Follow-related endpoints
-                                "/api/follow/**",
-                                "/api/follow",
-                                "/api/post/all-ids",                  // Post-related endpoints
-                                "/api/post/all-ids/",
-                                "/api/post/**",
-                                "/api/auth/refresh"                   // Token refresh endpoint
+                                "/api/auth/login",
+                                "/api/user/register",
+                                "/api/auth/refresh",
+                                "/oauth2/**",
+                                "/login/oauth2/code/google"
                         ).permitAll()
-                        .anyRequest().authenticated()             // All other endpoints require authentication
+                        .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2
-                        .successHandler(customAuthenticationSuccessHandler) // Handle successful Google login
+                        .successHandler(customAuthenticationSuccessHandler)
                 )
-                .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint)) // Handle unauthorized requests
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class); // JWT filter
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -73,13 +66,17 @@ public class SecurityConfig {
     }
 
     @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:8080"));
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);
-        configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

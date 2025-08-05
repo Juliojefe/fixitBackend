@@ -4,15 +4,27 @@ import com.example.fixit.dto.CreatePostRequestImages;
 import com.example.fixit.dto.CreatePostRequestUrl;
 import com.example.fixit.dto.PostSummary;
 import com.example.fixit.model.Post;
+import com.example.fixit.model.User;
+import com.example.fixit.repository.UserRepository;
 import com.example.fixit.service.PostService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.security.Principal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestController
 @RequestMapping("api/post")
@@ -21,8 +33,11 @@ public class PostController {
     @Autowired
     private PostService postService;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @GetMapping("/{id}")
-    public PostSummary getPostById(@PathVariable("id") int postId) {
+    public ResponseEntity<PostSummary> getPostById(@PathVariable("id") int postId) {
         return postService.getPostSummaryById(postId);
     }
 
@@ -32,7 +47,7 @@ public class PostController {
     }
 
     @GetMapping("/all-ids")
-    public Set<Integer> getAllPostIds() {
+    public ResponseEntity<Set<Integer>> getAllPostIds() {
         return postService.getAllPostIds();
     }
 
@@ -51,24 +66,59 @@ public class PostController {
         return postService.getSavedPostsByUserId(userId);
     }
 
-    @PostMapping("/like-post/{postId}/{userId}")
-    public boolean likePost(@PathVariable("postId") int postId, @PathVariable("userId") int userId) {
-        return postService.likePost(postId, userId);
+    @PostMapping("/{postId}/like")
+    public ResponseEntity<Boolean> likePost(@PathVariable int postId, Principal principal) {
+        Optional<User> userOpt = getUserFromPrincipal(principal);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(false);
+        }
+        return postService.likePost(postId, userOpt.get().getUserId());
     }
 
-    @PostMapping("/save-post/{postId}/{userId}")
-    public boolean savePost(@PathVariable("postId") int postId, @PathVariable("userId") int userId) {
-        return postService.savePost(postId, userId);
+    @DeleteMapping("/{postId}/like")
+    public ResponseEntity<Boolean> unlikePost(@PathVariable int postId, Principal principal) {
+        Optional<User> userOpt = getUserFromPrincipal(principal);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(false);
+        }
+        return postService.unlikePost(postId, userOpt.get().getUserId());
     }
 
-    @DeleteMapping("/unlike-post/{postId}/{userId}")
-    public boolean unlikePost(@PathVariable("postId") int postId, @PathVariable("userId") int userId) {
-        return postService.unlikePost(postId, userId);
+    @PostMapping("/{postId}/save")
+    public ResponseEntity<Boolean> savePost(@PathVariable int postId, Principal principal) {
+        Optional<User> userOpt = getUserFromPrincipal(principal);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(false);
+        }
+        return postService.savePost(postId, userOpt.get().getUserId());
     }
 
-    @DeleteMapping("/unSave-post/{postId}/{userId}")
-    public boolean unSavePost(@PathVariable("postId") int postId, @PathVariable("userId") int userId) {
-        return postService.unSavePost(postId, userId);
+    @DeleteMapping("/{postId}/save")
+    public ResponseEntity<Boolean> unSavePost(@PathVariable int postId, Principal principal) {
+        Optional<User> userOpt = getUserFromPrincipal(principal);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(false);
+        }
+        return postService.unSavePost(postId, userOpt.get().getUserId());
+    }
+
+    //  Helper method to safely extract the user ID from the Authentication object.
+    private int getUserIdFromAuthentication(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new SecurityException("User is not authenticated.");
+        }
+        if (authentication.getPrincipal() instanceof org.springframework.security.oauth2.jwt.Jwt) {
+            org.springframework.security.oauth2.jwt.Jwt jwt = (org.springframework.security.oauth2.jwt.Jwt) authentication.getPrincipal();
+            return jwt.getClaim("userId");
+        }
+        throw new IllegalArgumentException("Cannot determine user ID from authentication token.");
+    }
+
+    private Optional<User> getUserFromPrincipal(Principal principal) {
+        if (principal == null) {
+            return Optional.empty();
+        }
+        return userRepository.findByEmail(principal.getName());
     }
 
     @PostMapping("/create-post-urls")

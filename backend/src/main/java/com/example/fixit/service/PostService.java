@@ -7,12 +7,13 @@ import com.example.fixit.model.Post;
 import com.example.fixit.model.PostImage;
 import com.example.fixit.model.User;
 import com.example.fixit.repository.UserRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.example.fixit.repository.PostRepository;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.multipart.MultipartFile;
-
+import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
@@ -31,17 +32,18 @@ public class PostService {
     @Autowired
     private FileUploadService fileUploadService;
 
-    public PostSummary getPostSummaryById(int postId) {
+    @Transactional(readOnly = true)
+    public ResponseEntity<PostSummary> getPostSummaryById(int postId) {
         try {
             Optional<Post> OptPost = postRepository.findById(postId);
             if (OptPost.isPresent()) {
                 Post p = OptPost.get();
-                return new PostSummary(p);
+                return ResponseEntity.ok(new PostSummary(p));
             } else {
-                return new PostSummary();
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new PostSummary());
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
@@ -58,14 +60,14 @@ public class PostService {
         }
     }
 
-    public Set<Integer> getAllPostIds() {
+    public ResponseEntity<Set<Integer>> getAllPostIds() {
         try {
             List<Post> allPosts = postRepository.findAll();
             Set<Integer> ids = new HashSet<>();
             for (Post p : allPosts) {
                 ids.add(p.getPostId());
             }
-            return ids;
+            return ResponseEntity.ok(ids);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -128,95 +130,99 @@ public class PostService {
         }
     }
 
-    public boolean likePost(int postId, int userId) {
+    @Transactional
+    public ResponseEntity<Boolean> likePost(int postId, int userId) {
         try {
             Optional<Post> optPost = postRepository.findById(postId);
             Optional<User> optUser = userRepository.findById(userId);
             if (optUser.isPresent() && optPost.isPresent()) {
                 Post p = optPost.get();
                 User u = optUser.get();
-                if (p.getLikers().contains(u) || u.getLikedPosts().contains(p)) {
-                    return false;   //  already liked, no double liking
+                if (p.getLikers() == null) p.setLikers(new HashSet<>());
+                if (u.getLikedPosts() == null) u.setLikedPosts(new HashSet<>());
+
+                if (p.getLikers().contains(u)) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
                 }
                 p.getLikers().add(u);
                 u.getLikedPosts().add(p);
-                postRepository.save(p);
-                userRepository.save(u);
-                return true;    //  both exist, post has not been previously liked and can now be liked
+                return ResponseEntity.ok(true);
             } else {
-                return false;   //  one or the other does not exist
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
-    public boolean savePost(int postId, int userId) {
+    @Transactional
+    public ResponseEntity<Boolean> savePost(int postId, int userId) {
         try {
             Optional<Post> optPost = postRepository.findById(postId);
             Optional<User> optUser = userRepository.findById(userId);
             if (optUser.isPresent() && optPost.isPresent()) {
                 Post p = optPost.get();
                 User u = optUser.get();
-                if (p.getSavers().contains(u) || u.getSavedPosts().contains(p)) {
-                    return false;   //  already saved, no double saving
+                if (p.getSavers() == null) p.setSavers(new HashSet<>());
+                if (u.getSavedPosts() == null) u.setSavedPosts(new HashSet<>());
+
+                if (p.getSavers().contains(u)) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
                 }
                 p.getSavers().add(u);
                 u.getSavedPosts().add(p);
-                postRepository.save(p);
-                userRepository.save(u);
-                return true;    //  both exist, post has not been previously saved and can now be saved
+                return ResponseEntity.ok(true);
             } else {
-                return false;   //  one or the other does not exist
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
-    public boolean unlikePost(int postId, int userId) {
+    @Transactional
+    public ResponseEntity<Boolean> unlikePost(int postId, int userId) {
         try {
             Optional<Post> optPost = postRepository.findById(postId);
             Optional<User> optUser = userRepository.findById(userId);
             if (optUser.isPresent() && optPost.isPresent()) {
                 Post p = optPost.get();
                 User u = optUser.get();
-                if (p.getLikers().contains(u) || u.getLikedPosts().contains(p)) {
+                if (p.getLikers() != null && u.getLikedPosts() != null && p.getLikers().contains(u)) {
                     p.getLikers().remove(u);
                     u.getLikedPosts().remove(p);
-                    postRepository.save(p);
-                    userRepository.save(u);
-                    return true;   //  already liked, now unlike
+                    // No need to save explicitly, @Transactional will handle it
+                    return ResponseEntity.ok(true);
                 }
-                return false;    //  cannot unlike what has not been liked
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
             } else {
-                return false;   //  one or the other does not exist
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
-    public boolean unSavePost(int postId, int userId) {
+    @Transactional
+    public ResponseEntity<Boolean> unSavePost(int postId, int userId) {
         try {
             Optional<Post> optPost = postRepository.findById(postId);
             Optional<User> optUser = userRepository.findById(userId);
             if (optUser.isPresent() && optPost.isPresent()) {
                 Post p = optPost.get();
                 User u = optUser.get();
-                if (p.getSavers().contains(u) || u.getLikedPosts().contains(p)) {
+                if (p.getSavers() != null && u.getSavedPosts() != null && p.getSavers().contains(u)) {
                     p.getSavers().remove(u);
                     u.getSavedPosts().remove(p);
-                    postRepository.save(p);
-                    userRepository.save(u);
-                    return true;   //  already saved, now unSave
+                    // No need to save explicitly, @Transactional will handle it
+                    return ResponseEntity.ok(true);
                 }
-                return false;    //  cannot unSave what has not been saved
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
             } else {
-                return false;   //  one or the other does not exist
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
