@@ -4,18 +4,23 @@ import com.example.fixit.dto.CreatePostRequestImages;
 import com.example.fixit.dto.CreatePostRequestUrl;
 import com.example.fixit.dto.PostSummary;
 import com.example.fixit.model.Post;
+import com.example.fixit.model.User;
+import com.example.fixit.repository.UserRepository;
 import com.example.fixit.service.PostService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.security.Principal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -28,7 +33,8 @@ public class PostController {
     @Autowired
     private PostService postService;
 
-    private static final Logger log = LoggerFactory.getLogger(PostController.class);
+    @Autowired
+    private UserRepository userRepository;
 
     @GetMapping("/{id}")
     public ResponseEntity<PostSummary> getPostById(@PathVariable("id") int postId) {
@@ -61,32 +67,39 @@ public class PostController {
     }
 
     @PostMapping("/{postId}/like")
-    public ResponseEntity<Void> likePost(@PathVariable int postId, Authentication authentication) {
-        // Extract the user's ID from the token's claims
-        int userId = getUserIdFromAuthentication(authentication);
-        postService.likePost(postId, userId);
-        return ResponseEntity.ok().build();
-    }
-
-    @PostMapping("/{postId}/save")
-    public ResponseEntity<Void> savePost(@PathVariable int postId, Authentication authentication) {
-        int userId = getUserIdFromAuthentication(authentication);
-        postService.savePost(postId, userId);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<Boolean> likePost(@PathVariable int postId, Principal principal) {
+        Optional<User> userOpt = getUserFromPrincipal(principal);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(false);
+        }
+        return postService.likePost(postId, userOpt.get().getUserId());
     }
 
     @DeleteMapping("/{postId}/like")
-    public ResponseEntity<Void> unlikePost(@PathVariable int postId, Authentication authentication) {
-        int userId = getUserIdFromAuthentication(authentication);
-        postService.unlikePost(postId, userId);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<Boolean> unlikePost(@PathVariable int postId, Principal principal) {
+        Optional<User> userOpt = getUserFromPrincipal(principal);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(false);
+        }
+        return postService.unlikePost(postId, userOpt.get().getUserId());
+    }
+
+    @PostMapping("/{postId}/save")
+    public ResponseEntity<Boolean> savePost(@PathVariable int postId, Principal principal) {
+        Optional<User> userOpt = getUserFromPrincipal(principal);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(false);
+        }
+        return postService.savePost(postId, userOpt.get().getUserId());
     }
 
     @DeleteMapping("/{postId}/save")
-    public ResponseEntity<Void> unSavePost(@PathVariable int postId, Authentication authentication) {
-        int userId = getUserIdFromAuthentication(authentication);
-        postService.unSavePost(postId, userId);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<Boolean> unSavePost(@PathVariable int postId, Principal principal) {
+        Optional<User> userOpt = getUserFromPrincipal(principal);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(false);
+        }
+        return postService.unSavePost(postId, userOpt.get().getUserId());
     }
 
     //  Helper method to safely extract the user ID from the Authentication object.
@@ -99,6 +112,13 @@ public class PostController {
             return jwt.getClaim("userId");
         }
         throw new IllegalArgumentException("Cannot determine user ID from authentication token.");
+    }
+
+    private Optional<User> getUserFromPrincipal(Principal principal) {
+        if (principal == null) {
+            return Optional.empty();
+        }
+        return userRepository.findByEmail(principal.getName());
     }
 
     @PostMapping("/create-post-urls")
