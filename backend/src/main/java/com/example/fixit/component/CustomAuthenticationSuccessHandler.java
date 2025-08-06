@@ -41,7 +41,7 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         ResponseEntity<UserLoginResponse> loginEntity = authService.googleLogin(googleId);
         UserLoginResponse loginResponse = loginEntity.getBody();
 
-        if (loginEntity.getStatusCode().is2xxSuccessful() && loginResponse != null && loginResponse.isSuccess()) {
+        if (loginEntity.getStatusCode().is2xxSuccessful() && loginResponse != null) {
             // If login is successful, build the redirect URL with the login response
             buildRedirect(response, loginResponse);
         } else {
@@ -59,8 +59,8 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
 
         if (data instanceof UserLoginResponse) {
             UserLoginResponse res = (UserLoginResponse) data;
-            uriBuilder.queryParam("success", res.isSuccess());
-            uriBuilder.queryParam("userId", res.getUserId());
+//            uriBuilder.queryParam("success", res.isSuccess());
+//            uriBuilder.queryParam("userId", res.getUserId());
             uriBuilder.queryParam("name", res.getName());
             uriBuilder.queryParam("email", res.getEmail());
             uriBuilder.queryParam("profilePic", res.getProfilePic());
@@ -69,8 +69,8 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
             uriBuilder.queryParam("refreshToken", res.getRefreshToken());
         } else if (data instanceof UserRegisterResponse) {
             UserRegisterResponse res = (UserRegisterResponse) data;
-            uriBuilder.queryParam("success", res.isSuccess());
-            uriBuilder.queryParam("userId", res.getUserId());
+//            uriBuilder.queryParam("success", res.isSuccess());
+//            uriBuilder.queryParam("userId", res.getUserId());
             uriBuilder.queryParam("name", res.getName());
             uriBuilder.queryParam("email", res.getEmail());
             uriBuilder.queryParam("profilePic", res.getProfilePic());

@@ -35,23 +35,22 @@ public class AuthService {
             Optional<User> tempUser = userRepository.findByEmail(request.getEmail().trim());
             if (tempUser.isPresent()) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new UserRegisterResponse(false, "Email already in use", "", "", -1, false, "", ""));
+                        .body(new UserRegisterResponse( "Email already in use", "", "", false, "", ""));
             }
             if (!isValidPassword(request.getPassword())) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(new UserRegisterResponse(
-                                false,
                                 "Invalid password:\n• At least 8 characters long\n• At least one uppercase letter\n• At least one lowercase letter\n• At least one number\n• At least one special character",
-                                "", "", -1, false, "", ""));
+                                "", "",  false, "", ""));
             }
             if (!request.getEmail().trim().contains("@") || request.getEmail().trim().length() < 4) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new UserRegisterResponse(false, "Invalid email", "", "", -1, false,  "", ""));
+                        .body(new UserRegisterResponse( "Invalid email", "", "",  false,  "", ""));
             }
             String[] name = request.getName().trim().split("\\s+");
             if (name.length != 2 || name[0].length() < 2 || name[1].length() < 2) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new UserRegisterResponse(false, "Invalid first or last name", "", "", -1, false, "", ""));
+                        .body(new UserRegisterResponse( "Invalid first or last name", "", "",  false, "", ""));
             }
             User newUser = new User();
             newUser.setEmail(request.getEmail().trim());
@@ -78,7 +77,7 @@ public class AuthService {
             refreshTokenEntity.setUser(newUser);
             refreshTokenEntity.setExpiryDate(Instant.now().plus(7, ChronoUnit.DAYS));
             refreshTokenRepository.save(refreshTokenEntity);
-            return ResponseEntity.ok(new UserRegisterResponse(true, newUser.getName(), newUser.getEmail(), newUser.getProfilePic(), newUser.getUserId(), false, accessToken, refreshToken));
+            return ResponseEntity.ok(new UserRegisterResponse(newUser.getName(), newUser.getEmail(), newUser.getProfilePic(), false, accessToken, refreshToken));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -89,24 +88,24 @@ public class AuthService {
             Optional<User> tempUser = userRepository.findByEmail(request.getEmail().trim());
             if (tempUser.isPresent()) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new UserRegisterResponse(false, "Email already in use", "", "", -1, false, "", ""));
+                        .body(new UserRegisterResponse( "Email already in use", "", "", false, "", ""));
             }
 
             Optional<User> googleUser = userRepository.findByGoogleId(request.getGoogleId().trim());
             if (googleUser.isPresent()) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new UserRegisterResponse(false, "Google ID already registered", "", "", -1, false, "", ""));
+                        .body(new UserRegisterResponse( "Google ID already registered", "", "",  false, "", ""));
             }
 
             if (!request.getEmail().trim().contains("@") || request.getEmail().trim().length() < 4) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new UserRegisterResponse(false, "Invalid email", "", "", -1, false, "", ""));
+                        .body(new UserRegisterResponse( "Invalid email", "", "", false, "", ""));
             }
 
             String[] name = request.getName().trim().split("\\s+");
             if (name.length != 2 || name[0].length() < 2 || name[1].length() < 2) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new UserRegisterResponse(false, "Invalid first or last name", "", "", -1, false, "", ""));
+                        .body(new UserRegisterResponse( "Invalid first or last name", "", "", false, "", ""));
             }
             User newUser = new User();
             newUser.setEmail(request.getEmail().trim());
@@ -133,7 +132,7 @@ public class AuthService {
             refreshTokenEntity.setUser(newUser);
             refreshTokenEntity.setExpiryDate(Instant.now().plus(7, ChronoUnit.DAYS));
             refreshTokenRepository.save(refreshTokenEntity);
-            return ResponseEntity.ok(new UserRegisterResponse(true, newUser.getName(), newUser.getEmail(), newUser.getProfilePic(), newUser.getUserId(), false, accessToken, refreshToken));
+            return ResponseEntity.ok(new UserRegisterResponse(newUser.getName(), newUser.getEmail(), newUser.getProfilePic(), false, accessToken, refreshToken));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -151,10 +150,10 @@ public class AuthService {
                 refreshTokenEntity.setUser(user);
                 refreshTokenEntity.setExpiryDate(Instant.now().plus(7, ChronoUnit.DAYS));
                 refreshTokenRepository.save(refreshTokenEntity);
-                return ResponseEntity.ok(new UserLoginResponse(true, user.getName(), user.getEmail(), user.getProfilePic(), user.getUserId(), false, accessToken, refreshToken));
+                return ResponseEntity.ok(new UserLoginResponse(user.getName(), user.getEmail(), user.getProfilePic(), false, accessToken, refreshToken));
             } else {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new UserLoginResponse(false, "", "", "", -1, false, "", ""));
+                        .body(new UserLoginResponse("", "", "", false, "", ""));
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -173,10 +172,10 @@ public class AuthService {
                 refreshTokenEntity.setUser(user);
                 refreshTokenEntity.setExpiryDate(Instant.now().plus(7, ChronoUnit.DAYS));
                 refreshTokenRepository.save(refreshTokenEntity);
-                return ResponseEntity.ok(new UserLoginResponse(true, user.getName(), user.getEmail(), user.getProfilePic(), user.getUserId(), true, accessToken, refreshToken));
+                return ResponseEntity.ok(new UserLoginResponse(user.getName(), user.getEmail(), user.getProfilePic(), true, accessToken, refreshToken));
             }
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new UserLoginResponse(false, "Google user not found, please register first", "", "", -1, false, "", ""));
+                    .body(new UserLoginResponse("Google user not found, please register first", "", "", false, "", ""));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
