@@ -1,30 +1,22 @@
 package com.example.fixit.dto;
 
 public class UserLoginResponse {
-    private boolean success;
     private String name;
     private String email;
     private String profilePic;
-    private int userId;
     private boolean isGoogle;
     private String accessToken;
     private String refreshToken;
 
     public UserLoginResponse() {}
 
-    public UserLoginResponse (boolean success, String name, String email, String profilePic, int userId, boolean isGoogle, String accessToken, String refreshToken) {
-        this.success = success;
+    public UserLoginResponse (String name, String email, String profilePic, boolean isGoogle, String accessToken, String refreshToken) {
         this.name = name;
         this.email = email;
         this.profilePic = profilePic;
-        this.userId = userId;
         this.isGoogle = isGoogle;
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
-    }
-
-    public boolean isSuccess() {
-        return success;
     }
 
     public boolean isGoogle() {
@@ -57,22 +49,6 @@ public class UserLoginResponse {
 
     public void setProfilePic(String profilePic) {
         this.profilePic = profilePic;
-    }
-
-    public boolean getSuccess() {
-        return success;
-    }
-
-    public void setSuccess(boolean success) {
-        this.success = success;
-    }
-
-    public int getUserId() {
-        return userId;
-    }
-
-    public void setUserId(int userId) {
-        this.userId = userId;
     }
 
     public String getAccessToken() {
