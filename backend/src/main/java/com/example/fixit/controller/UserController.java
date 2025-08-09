@@ -40,11 +40,6 @@ public class UserController {
         return userService.getAllUserIds();
     }
 
-    @GetMapping("/mutual/{userAId}/{userBId}")
-    public MutualFollowResponse checkMutualFollow(@PathVariable int userAId, @PathVariable int userBId) {
-        return userService.checkMutualFollow(userAId, userBId);
-    }
-
     @PatchMapping("/update-name/{id}/name")
     public boolean updateUserName(@RequestBody UpdateNameRequest request) {
         return userService.updateName(request);
