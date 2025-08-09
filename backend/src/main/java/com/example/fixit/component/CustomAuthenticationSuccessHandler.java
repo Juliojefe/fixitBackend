@@ -55,12 +55,11 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
     // A helper method to build the redirect URL using UriComponentsBuilder
     private void buildRedirect(HttpServletResponse response, Object data) throws IOException {
         String baseUrl = "http://localhost:3000/auth-callback";
-        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl)
+                .queryParam("success", "true");
 
         if (data instanceof UserLoginResponse) {
             UserLoginResponse res = (UserLoginResponse) data;
-//            uriBuilder.queryParam("success", res.isSuccess());
-//            uriBuilder.queryParam("userId", res.getUserId());
             uriBuilder.queryParam("name", res.getName());
             uriBuilder.queryParam("email", res.getEmail());
             uriBuilder.queryParam("profilePic", res.getProfilePic());
@@ -69,8 +68,6 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
             uriBuilder.queryParam("refreshToken", res.getRefreshToken());
         } else if (data instanceof UserRegisterResponse) {
             UserRegisterResponse res = (UserRegisterResponse) data;
-//            uriBuilder.queryParam("success", res.isSuccess());
-//            uriBuilder.queryParam("userId", res.getUserId());
             uriBuilder.queryParam("name", res.getName());
             uriBuilder.queryParam("email", res.getEmail());
             uriBuilder.queryParam("profilePic", res.getProfilePic());

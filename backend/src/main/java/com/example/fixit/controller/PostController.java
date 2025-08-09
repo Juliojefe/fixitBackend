@@ -102,25 +102,6 @@ public class PostController {
         return postService.unSavePost(postId, userOpt.get().getUserId());
     }
 
-    //  Helper method to safely extract the user ID from the Authentication object.
-    private int getUserIdFromAuthentication(Authentication authentication) {
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new SecurityException("User is not authenticated.");
-        }
-        if (authentication.getPrincipal() instanceof org.springframework.security.oauth2.jwt.Jwt) {
-            org.springframework.security.oauth2.jwt.Jwt jwt = (org.springframework.security.oauth2.jwt.Jwt) authentication.getPrincipal();
-            return jwt.getClaim("userId");
-        }
-        throw new IllegalArgumentException("Cannot determine user ID from authentication token.");
-    }
-
-    private Optional<User> getUserFromPrincipal(Principal principal) {
-        if (principal == null) {
-            return Optional.empty();
-        }
-        return userRepository.findByEmail(principal.getName());
-    }
-
     @PostMapping("/create-post-urls")
     public PostSummary createPost(@RequestBody CreatePostRequestUrl request) {
         return postService.createPost(request);
@@ -142,6 +123,25 @@ public class PostController {
                 imageList
         );
         return postService.createPost(request);
+    }
+
+    //  Helper method to safely extract the user ID from the Authentication object.
+    private int getUserIdFromAuthentication(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new SecurityException("User is not authenticated.");
+        }
+        if (authentication.getPrincipal() instanceof org.springframework.security.oauth2.jwt.Jwt) {
+            org.springframework.security.oauth2.jwt.Jwt jwt = (org.springframework.security.oauth2.jwt.Jwt) authentication.getPrincipal();
+            return jwt.getClaim("userId");
+        }
+        throw new IllegalArgumentException("Cannot determine user ID from authentication token.");
+    }
+
+    private Optional<User> getUserFromPrincipal(Principal principal) {
+        if (principal == null) {
+            return Optional.empty();
+        }
+        return userRepository.findByEmail(principal.getName());
     }
 
 }
