@@ -33,7 +33,7 @@ public class FollowController {
         return followService.checkMutualFollow(userOpt.get().getUserId(), userBId);
     }
 
-    @DeleteMapping("/{activeUserId}/follow/{unfollowUserId}")
+    @DeleteMapping("/{unfollowUserId}")
     public ResponseEntity<Boolean> unfollow(@PathVariable int unfollowUserId, Principal principal) {
         Optional<User> userOpt = getUserFromPrincipal(principal);
         if (userOpt.isEmpty()) {
@@ -42,7 +42,7 @@ public class FollowController {
         return followService.unfollow(userOpt.get().getUserId(), unfollowUserId);
     }
 
-    @PostMapping("/{activeUserId}/follow/{followUserId}")
+    @PostMapping("/{followUserId}")
     public ResponseEntity<Boolean> follow(@PathVariable int followUserId, Principal principal) {
         Optional<User> userOpt = getUserFromPrincipal(principal);
         if (userOpt.isEmpty()) {
@@ -51,7 +51,7 @@ public class FollowController {
         return followService.follow(userOpt.get().getUserId(), followUserId);
     }
 
-    @DeleteMapping("/{activeUserId}/remove-follower/{removeFollowerId}")
+    @DeleteMapping("/remove-follower/{removeFollowerId}")
     public ResponseEntity<Boolean> removeFollower(@PathVariable int removeFollowerId, Principal principal) {
         Optional<User> userOpt = getUserFromPrincipal(principal);
         if (userOpt.isEmpty()) {

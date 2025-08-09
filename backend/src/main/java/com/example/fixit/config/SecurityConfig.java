@@ -44,7 +44,8 @@ public class SecurityConfig {
                         .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll()
                         .requestMatchers(
                                 "/api/auth/login",
-                                "/api/user/register",
+                                "/api/auth/register",
+                                "api/auth/register/google",
                                 "/api/auth/refresh",
                                 "/oauth2/**",
                                 "/login/oauth2/code/google"

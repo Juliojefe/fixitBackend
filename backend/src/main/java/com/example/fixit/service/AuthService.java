@@ -54,7 +54,7 @@ public class AuthService {
             }
             User newUser = new User();
             newUser.setEmail(request.getEmail().trim());
-            if (request.getProfilePic().trim().isEmpty() || request.getProfilePic() == null) {
+            if (request.getProfilePic().isEmpty() || request.getProfilePic() == null) {
                 newUser.setProfilePic("https://ui-avatars.com/api/?name=User&background=cccccc&color=222222&size=128");
             } else {
                 newUser.setProfilePic(request.getProfilePic().trim());
@@ -113,7 +113,7 @@ public class AuthService {
             }
             User newUser = new User();
             newUser.setEmail(request.getEmail().trim());
-            if (request.getProfilePic().trim().isEmpty() || request.getProfilePic() == null) {
+            if (request.getProfilePic().isEmpty() || request.getProfilePic() == null) {
                 newUser.setProfilePic("https://ui-avatars.com/api/?name=User&background=cccccc&color=222222&size=128");
             } else {
                 newUser.setProfilePic(request.getProfilePic().trim());
