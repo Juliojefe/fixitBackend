@@ -9,7 +9,10 @@ import com.example.fixit.model.UserRoles;
 import com.example.fixit.repository.UserRepository;
 import com.example.fixit.repository.UserRolesRepository;
 import jakarta.transaction.Transactional;
+import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.slf4j.Logger;
@@ -75,16 +78,16 @@ public class UserService {
         }
     }
 
-    public List<Integer> getAllUserIds() {
+    public ResponseEntity<List<Integer>> getAllUserIds() {
         try {
             List<Integer> ids = new ArrayList<>();
             List<User> allUsers = userRepository.findAll();
             for (User u : allUsers) {
                 ids.add(u.getUserId());
             }
-            return ids;
+            return ResponseEntity.ok(ids);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 

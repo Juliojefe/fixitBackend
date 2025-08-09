@@ -4,6 +4,7 @@ import com.example.fixit.dto.*;
 import com.example.fixit.model.User;
 import com.example.fixit.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,23 +18,25 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @GetMapping("/")
+    @GetMapping
     public List<GetUserResponse> getAllUsers() {
         return userService.getAllUsers();
     }
 
     @GetMapping("/{id}")
     public GetUserResponse getuserById(@PathVariable("id") int userId) {
+        //  verbose response containing all user details
         return userService.getuserById(userId);
     }
 
     @GetMapping("/summary/{id}")
     public UserSummary getuserSummaryById(@PathVariable("id") int userId) {
+        //  summary response containing only name and pfp
         return userService.getuserSummaryById(userId);
     }
 
     @GetMapping("/all-ids")
-    public List<Integer> getAllUserIds() {
+    public ResponseEntity<List<Integer>> getAllUserIds() {
         return userService.getAllUserIds();
     }
 
