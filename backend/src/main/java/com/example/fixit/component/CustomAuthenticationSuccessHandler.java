@@ -13,7 +13,7 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
-import org.springframework.web.util.UriComponentsBuilder; // Import the builder
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 
@@ -46,7 +46,8 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
             buildRedirect(response, loginResponse);
         } else {
             // If login fails (user doesn't exist), register them and build the redirect URL
-            GoogleUserRegisterRequest registerRequest = new GoogleUserRegisterRequest(googleId, email, name, profilePic);
+            String finalProfilePic = (profilePic != null) ? profilePic : "";
+            GoogleUserRegisterRequest registerRequest = new GoogleUserRegisterRequest(googleId, email, name, finalProfilePic);
             ResponseEntity<UserRegisterResponse> registerEntity = authService.googleRegister(registerRequest);
             buildRedirect(response, registerEntity.getBody());
         }
