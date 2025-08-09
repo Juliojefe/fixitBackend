@@ -54,7 +54,11 @@ public class AuthService {
             }
             User newUser = new User();
             newUser.setEmail(request.getEmail().trim());
-            newUser.setProfilePic(request.getProfilePic().trim());
+            if (request.getProfilePic().trim().isEmpty() || request.getProfilePic() == null) {
+                newUser.setProfilePic("https://ui-avatars.com/api/?name=User&background=cccccc&color=222222&size=128");
+            } else {
+                newUser.setProfilePic(request.getProfilePic().trim());
+            }
             newUser.setName(request.getName().trim());
             newUser.setPassword(passwordEncoder.encode(request.getPassword()).trim());
             newUser.setGoogleId(null);
@@ -109,7 +113,11 @@ public class AuthService {
             }
             User newUser = new User();
             newUser.setEmail(request.getEmail().trim());
-            newUser.setProfilePic(request.getProfilePic().trim());
+            if (request.getProfilePic().trim().isEmpty() || request.getProfilePic() == null) {
+                newUser.setProfilePic("https://ui-avatars.com/api/?name=User&background=cccccc&color=222222&size=128");
+            } else {
+                newUser.setProfilePic(request.getProfilePic().trim());
+            }
             newUser.setName(request.getName().trim());
             newUser.setPassword(null); // No password for Google users
             newUser.setGoogleId(request.getGoogleId().trim());
