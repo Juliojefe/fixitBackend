@@ -47,19 +47,6 @@ public class PostService {
         }
     }
 
-    public Set<PostSummary> getAllPosts() {
-        try {
-            Set<PostSummary> ps = new HashSet<>();
-            List<Post> allPosts = postRepository.findAll();
-            for (Post p : allPosts) {
-                ps.add(new PostSummary(p));
-            }
-            return ps;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public ResponseEntity<Set<Integer>> getAllPostIds() {
         try {
             List<Post> allPosts = postRepository.findAll();

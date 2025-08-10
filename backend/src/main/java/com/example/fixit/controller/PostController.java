@@ -41,11 +41,6 @@ public class PostController {
         return postService.getPostSummaryById(postId);
     }
 
-    @GetMapping("/")
-    public Set<PostSummary> getALlPosts() {
-        return postService.getAllPosts();
-    }
-
     @GetMapping("/all-ids")
     public ResponseEntity<Set<Integer>> getAllPostIds() {
         return postService.getAllPostIds();
