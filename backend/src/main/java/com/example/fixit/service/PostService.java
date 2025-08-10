@@ -40,10 +40,10 @@ public class PostService {
                 Post p = OptPost.get();
                 return ResponseEntity.ok(new PostSummary(p));
             } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new PostSummary());
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
@@ -72,10 +72,10 @@ public class PostService {
                 }
                 return ResponseEntity.ok(ids);
             } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
@@ -91,10 +91,10 @@ public class PostService {
                 }
                 return ResponseEntity.ok(ids);
             } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
@@ -110,10 +110,10 @@ public class PostService {
                 }
                 return ResponseEntity.ok(ids);
             } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
@@ -129,16 +129,16 @@ public class PostService {
                 if (u.getLikedPosts() == null) u.setLikedPosts(new HashSet<>());
 
                 if (p.getLikers().contains(u)) {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
                 }
                 p.getLikers().add(u);
                 u.getLikedPosts().add(p);
                 return ResponseEntity.ok(true);
             } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
@@ -154,16 +154,16 @@ public class PostService {
                 if (u.getSavedPosts() == null) u.setSavedPosts(new HashSet<>());
 
                 if (p.getSavers().contains(u)) {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
                 }
                 p.getSavers().add(u);
                 u.getSavedPosts().add(p);
                 return ResponseEntity.ok(true);
             } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
@@ -181,12 +181,12 @@ public class PostService {
                     // No need to save explicitly, @Transactional will handle it
                     return ResponseEntity.ok(true);
                 }
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
             } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
@@ -204,12 +204,12 @@ public class PostService {
                     // No need to save explicitly, @Transactional will handle it
                     return ResponseEntity.ok(true);
                 }
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
             } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
