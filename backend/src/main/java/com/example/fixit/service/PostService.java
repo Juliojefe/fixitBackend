@@ -60,7 +60,7 @@ public class PostService {
         }
     }
 
-    public Set<Integer> getOwnedPostByUserId(int userId) {
+    public ResponseEntity<Set<Integer>> getOwnedPostByUserId(int userId) {
         try {
             Optional<User> optUser = userRepository.findById(userId);
             if (optUser.isPresent()) {
@@ -70,16 +70,16 @@ public class PostService {
                 for (Post p : ownedPosts) {
                     ids.add(p.getPostId());
                 }
-                return ids;
+                return ResponseEntity.ok(ids);
             } else {
-                return new HashSet<>();
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
-    public Set<Integer> getLikedPostByUserId(int userId) {
+    public ResponseEntity<Set<Integer>> getLikedPostByUserId(int userId) {
         try {
             Optional<User> optUser = userRepository.findById(userId);
             if (optUser.isPresent()) {
@@ -89,16 +89,16 @@ public class PostService {
                 for (Post p : ownedPosts) {
                     ids.add(p.getPostId());
                 }
-                return ids;
+                return ResponseEntity.ok(ids);
             } else {
-                return new HashSet<>();
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
-    public Set<Integer> getSavedPostsByUserId(int userId) {
+    public ResponseEntity<Set<Integer>> getSavedPostsByUserId(int userId) {
         try {
             Optional<User> optUser = userRepository.findById(userId);
             if (optUser.isPresent()) {
@@ -108,12 +108,12 @@ public class PostService {
                 for (Post p : ownedPosts) {
                     ids.add(p.getPostId());
                 }
-                return ids;
+                return ResponseEntity.ok(ids);
             } else {
-                return new HashSet<>();
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 

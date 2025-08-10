@@ -46,19 +46,23 @@ public class PostController {
         return postService.getAllPostIds();
     }
 
-    @GetMapping("/owned-post-by-userId/{userId}")
-    public Set<Integer> getOwnedPostByUserId(@PathVariable("userId") int userId) {
+    @GetMapping("/owned/{userId}")
+    public ResponseEntity<Set<Integer>> getOwnedPostByUserId(@PathVariable("userId") int userId) {
         return postService.getOwnedPostByUserId(userId);
     }
 
-    @GetMapping("/liked-post-by-userId/{userId}")
-    public Set<Integer> getLikedPostByUserId(@PathVariable("userId") int userId) {
+    @GetMapping("/liked/{userId}")
+    public ResponseEntity<Set<Integer>> getLikedPostByUserId(@PathVariable("userId") int userId) {
         return postService.getLikedPostByUserId(userId);
     }
 
-    @GetMapping("/saved-post-by-userId/{userId}")
-    public Set<Integer> getSavedPostByUserId(@PathVariable("userId") int userId) {
-        return postService.getSavedPostsByUserId(userId);
+    @GetMapping("/saved")
+    public ResponseEntity<Set<Integer>> getSavedPostByUserId(Principal principal) {
+        Optional<User> userOpt = getUserFromPrincipal(principal);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
+        return postService.getSavedPostsByUserId(userOpt.get().getUserId());
     }
 
     @PostMapping("/{postId}/like")
