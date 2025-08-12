@@ -243,7 +243,7 @@ public class PostService {
 
     public ResponseEntity<PostSummary> createPost(CreatePostRequestImages requestImages, int userId) {
         try {
-            Optional<User> optUser = userRepository.findById(requestImages.getUser_id());
+            Optional<User> optUser = userRepository.findById(userId);
             User u;
             if (optUser.isPresent()) {
                 u = optUser.get();
