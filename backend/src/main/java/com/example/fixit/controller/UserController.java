@@ -24,7 +24,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public GetUserResponse getuserById(@PathVariable("id") int userId) {
+    public ResponseEntity<GetUserResponse> getuserById(@PathVariable("id") int userId) {
         //  verbose response containing all user details
         return userService.getuserById(userId);
     }

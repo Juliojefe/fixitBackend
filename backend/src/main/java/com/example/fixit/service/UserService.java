@@ -50,17 +50,17 @@ public class UserService {
         }
     }
 
-    public GetUserResponse getuserById(int userId) {
+    public ResponseEntity<GetUserResponse> getuserById(int userId) {
         try {
             Optional<User> OptUser = userRepository.findById(userId);
             if (OptUser.isPresent()) {
                 User u = OptUser.get();
-                return new GetUserResponse(u);
+                return ResponseEntity.ok(new GetUserResponse(u));
             } else {
-                return new GetUserResponse();
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
@@ -87,7 +87,7 @@ public class UserService {
             }
             return ResponseEntity.ok(ids);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 

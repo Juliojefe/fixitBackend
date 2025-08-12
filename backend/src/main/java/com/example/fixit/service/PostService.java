@@ -40,23 +40,10 @@ public class PostService {
                 Post p = OptPost.get();
                 return ResponseEntity.ok(new PostSummary(p));
             } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new PostSummary());
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-    }
-
-    public Set<PostSummary> getAllPosts() {
-        try {
-            Set<PostSummary> ps = new HashSet<>();
-            List<Post> allPosts = postRepository.findAll();
-            for (Post p : allPosts) {
-                ps.add(new PostSummary(p));
-            }
-            return ps;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
@@ -73,7 +60,7 @@ public class PostService {
         }
     }
 
-    public Set<Integer> getOwnedPostByUserId(int userId) {
+    public ResponseEntity<Set<Integer>> getOwnedPostByUserId(int userId) {
         try {
             Optional<User> optUser = userRepository.findById(userId);
             if (optUser.isPresent()) {
@@ -83,16 +70,16 @@ public class PostService {
                 for (Post p : ownedPosts) {
                     ids.add(p.getPostId());
                 }
-                return ids;
+                return ResponseEntity.ok(ids);
             } else {
-                return new HashSet<>();
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    public Set<Integer> getLikedPostByUserId(int userId) {
+    public ResponseEntity<Set<Integer>> getLikedPostByUserId(int userId) {
         try {
             Optional<User> optUser = userRepository.findById(userId);
             if (optUser.isPresent()) {
@@ -102,16 +89,16 @@ public class PostService {
                 for (Post p : ownedPosts) {
                     ids.add(p.getPostId());
                 }
-                return ids;
+                return ResponseEntity.ok(ids);
             } else {
-                return new HashSet<>();
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    public Set<Integer> getSavedPostsByUserId(int userId) {
+    public ResponseEntity<Set<Integer>> getSavedPostsByUserId(int userId) {
         try {
             Optional<User> optUser = userRepository.findById(userId);
             if (optUser.isPresent()) {
@@ -121,12 +108,12 @@ public class PostService {
                 for (Post p : ownedPosts) {
                     ids.add(p.getPostId());
                 }
-                return ids;
+                return ResponseEntity.ok(ids);
             } else {
-                return new HashSet<>();
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
@@ -142,16 +129,16 @@ public class PostService {
                 if (u.getLikedPosts() == null) u.setLikedPosts(new HashSet<>());
 
                 if (p.getLikers().contains(u)) {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
                 }
                 p.getLikers().add(u);
                 u.getLikedPosts().add(p);
                 return ResponseEntity.ok(true);
             } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
@@ -167,16 +154,16 @@ public class PostService {
                 if (u.getSavedPosts() == null) u.setSavedPosts(new HashSet<>());
 
                 if (p.getSavers().contains(u)) {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
                 }
                 p.getSavers().add(u);
                 u.getSavedPosts().add(p);
                 return ResponseEntity.ok(true);
             } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
@@ -194,12 +181,12 @@ public class PostService {
                     // No need to save explicitly, @Transactional will handle it
                     return ResponseEntity.ok(true);
                 }
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
             } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
@@ -217,23 +204,23 @@ public class PostService {
                     // No need to save explicitly, @Transactional will handle it
                     return ResponseEntity.ok(true);
                 }
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
             } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    public PostSummary createPost(CreatePostRequestUrl request) {
+    public ResponseEntity<PostSummary> createPost(CreatePostRequestUrl request, int userId) {
         try {
-            Optional<User> optUser = userRepository.findById(request.getUser_id());
+            Optional<User> optUser = userRepository.findById(userId);
             User u;
             if (optUser.isPresent()) {
                 u = optUser.get();
             } else {
-                throw new RuntimeException("user not found");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }
             Post post = new Post();
             post.setDescription(request.getDescription());
@@ -248,20 +235,20 @@ public class PostService {
             }
             post.setImages(postImages);
             Post savedPost = postRepository.save(post);
-            return new PostSummary(savedPost);
+            return ResponseEntity.ok(new PostSummary(savedPost));
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    public PostSummary createPost(CreatePostRequestImages requestImages) {
+    public ResponseEntity<PostSummary> createPost(CreatePostRequestImages requestImages, int userId) {
         try {
-            Optional<User> optUser = userRepository.findById(requestImages.getUser_id());
+            Optional<User> optUser = userRepository.findById(userId);
             User u;
             if (optUser.isPresent()) {
                 u = optUser.get();
             } else {
-                throw new RuntimeException("user not found");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }
             Post post = new Post();
             post.setDescription(requestImages.getDescription());
@@ -277,9 +264,9 @@ public class PostService {
             }
             post.setImages(postImages);
             Post savedPost = postRepository.save(post);
-            return new PostSummary(savedPost);
+            return ResponseEntity.ok(new PostSummary(savedPost));
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
 
     }
