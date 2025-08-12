@@ -101,27 +101,30 @@ public class PostController {
         return postService.unSavePost(postId, userOpt.get().getUserId());
     }
 
-    @PostMapping("/create-post-urls")
-    public PostSummary createPost(@RequestBody CreatePostRequestUrl request) {
-        return postService.createPost(request);
+    @PostMapping("/create/urls")
+    public ResponseEntity<PostSummary> createPost(@RequestBody CreatePostRequestUrl request, Principal principal) {
+        Optional<User> userOpt = getUserFromPrincipal(principal);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        return postService.createPost(request, userOpt.get().getUserId());
     }
 
-    @PostMapping(value = "/create-post-images", consumes = { "multipart/form-data" })
-    public PostSummary createPost(
+    @PostMapping(value = "/create/images", consumes = { "multipart/form-data" })
+    public ResponseEntity<PostSummary> createPost(
             @RequestParam("description") String description,
-            @RequestParam("user_id") int userId,
             @RequestParam("createdAt") String createdAt,
-            @RequestParam(value = "requestImages", required = false) List<MultipartFile> images
+            @RequestParam(value = "requestImages", required = false) List<MultipartFile> images,
+            Principal principal
     ) {
         List<MultipartFile> imageList = images != null ? images : new ArrayList<>();    //  empty?
 
-        CreatePostRequestImages request = new CreatePostRequestImages(
-                description,
-                userId,
-                Instant.parse(createdAt),
-                imageList
-        );
-        return postService.createPost(request);
+        CreatePostRequestImages request = new CreatePostRequestImages(description, Instant.parse(createdAt), imageList);
+        Optional<User> userOpt = getUserFromPrincipal(principal);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        return postService.createPost(request, userOpt.get().getUserId());
     }
 
     //  Helper method to safely extract the user ID from the Authentication object.

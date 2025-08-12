@@ -6,13 +6,11 @@ import java.util.List;
 public class CreatePostRequestUrl {
 
     private String description;
-    private int user_id;
     private Instant createdAt;
     private List<String> images;
 
-    public CreatePostRequestUrl(String description, int user_id, Instant createdAt, List<String> images) {
+    public CreatePostRequestUrl(String description, Instant createdAt, List<String> images) {
         this.description = description;
-        this.user_id = user_id;
         this.createdAt = createdAt;
         this.images = images;
     }
@@ -23,14 +21,6 @@ public class CreatePostRequestUrl {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public int getUser_id() {
-        return user_id;
-    }
-
-    public void setUser_id(int user_id) {
-        this.user_id = user_id;
     }
 
     public Instant getCreatedAt() {

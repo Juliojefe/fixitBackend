@@ -213,14 +213,14 @@ public class PostService {
         }
     }
 
-    public PostSummary createPost(CreatePostRequestUrl request) {
+    public ResponseEntity<PostSummary> createPost(CreatePostRequestUrl request, int userId) {
         try {
-            Optional<User> optUser = userRepository.findById(request.getUser_id());
+            Optional<User> optUser = userRepository.findById(userId);
             User u;
             if (optUser.isPresent()) {
                 u = optUser.get();
             } else {
-                throw new RuntimeException("user not found");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }
             Post post = new Post();
             post.setDescription(request.getDescription());
@@ -235,20 +235,20 @@ public class PostService {
             }
             post.setImages(postImages);
             Post savedPost = postRepository.save(post);
-            return new PostSummary(savedPost);
+            return ResponseEntity.ok(new PostSummary(savedPost));
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    public PostSummary createPost(CreatePostRequestImages requestImages) {
+    public ResponseEntity<PostSummary> createPost(CreatePostRequestImages requestImages, int userId) {
         try {
             Optional<User> optUser = userRepository.findById(requestImages.getUser_id());
             User u;
             if (optUser.isPresent()) {
                 u = optUser.get();
             } else {
-                throw new RuntimeException("user not found");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }
             Post post = new Post();
             post.setDescription(requestImages.getDescription());
@@ -264,9 +264,9 @@ public class PostService {
             }
             post.setImages(postImages);
             Post savedPost = postRepository.save(post);
-            return new PostSummary(savedPost);
+            return ResponseEntity.ok(new PostSummary(savedPost));
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
 
     }

@@ -8,13 +8,11 @@ import java.util.List;
 public class CreatePostRequestImages {
 
     private String description;
-    private int user_id;
     private Instant createdAt;
     private List<MultipartFile> images;
 
-    public CreatePostRequestImages(String description, int user_id, Instant createdAt, List<MultipartFile> images) {
+    public CreatePostRequestImages(String description, Instant createdAt, List<MultipartFile> images) {
         this.description = description;
-        this.user_id = user_id;
         this.createdAt = createdAt;
         this.images = images;
     }
