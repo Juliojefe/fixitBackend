@@ -46,6 +46,16 @@ public class PostController {
         return postService.getAllPostIds();
     }
 
+    @GetMapping("/following")
+    public ResponseEntity<List<Integer>> getFollowingPostIds(Principal principal) {
+	    //	postIds of post created by those who a user follows sorted
+        Optional<User> userOpt = getUserFromPrincipal(principal);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
+        return postService.getFollowingPostIds(userOpt.get());
+    }
+
     @GetMapping("/owned/{userId}")
     public ResponseEntity<Set<Integer>> getOwnedPostByUserId(@PathVariable("userId") int userId) {
         return postService.getOwnedPostByUserId(userId);

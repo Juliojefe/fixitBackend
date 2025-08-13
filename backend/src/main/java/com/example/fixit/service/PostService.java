@@ -15,10 +15,8 @@ import com.example.fixit.repository.PostRepository;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class PostService {
@@ -57,6 +55,23 @@ public class PostService {
             return ResponseEntity.ok(ids);
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public ResponseEntity<List<Integer>> getFollowingPostIds(User u) {
+        try {
+            Set<User> followedUsers = u.getFollowing();
+            List<Post> followingPosts = new ArrayList<>();
+            for (User followed : followedUsers) {
+                followingPosts.addAll(followed.getOwnedPosts());
+            }
+            List<Integer> ids = followingPosts.stream()
+                    .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
+                    .map(Post::getPostId)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(ids);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
