@@ -13,6 +13,7 @@ import java.util.Set;
 
 public class PostSummary {
 
+    private int authorId;
     private String description;
     private String createdBy;
     private String createdByProfilePicUrl;
@@ -25,6 +26,7 @@ public class PostSummary {
     private Set<Integer> savedIds;
 
     public PostSummary(Post post) {
+        this.authorId = post.getUser().getUserId();
         this.description = post.getDescription();
         this.createdBy = post.getUser().getName();
         this.createdByProfilePicUrl = post.getUser().getProfilePic();
@@ -47,6 +49,18 @@ public class PostSummary {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public int getAuthorId() {
+        return authorId;
+    }
+
+    public void setAuthorId(int authorId) {
+        this.authorId = authorId;
+    }
+
+    public void setSavedIds(Set<Integer> savedIds) {
+        this.savedIds = savedIds;
     }
 
     public List<String> getImageUrls() {

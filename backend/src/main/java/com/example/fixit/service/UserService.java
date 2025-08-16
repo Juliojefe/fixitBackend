@@ -78,6 +78,19 @@ public class UserService {
         }
     }
 
+    public ResponseEntity<UserProfile> getUserProfileById(int userId) {
+        try {
+            Optional<User> u = userRepository.findById(userId);
+            if (u.isPresent()) {
+                return ResponseEntity.ok(new UserProfile(u.get()));
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     public ResponseEntity<List<Integer>> getAllUserIds() {
         try {
             List<Integer> ids = new ArrayList<>();

@@ -35,6 +35,12 @@ public class UserController {
         return userService.getuserSummaryById(userId);
     }
 
+    @GetMapping("/{id}/profile")
+    public ResponseEntity<UserProfile> getUserProfileById(@PathVariable("id") int userId) {
+        //  public profile access
+        return userService.getUserProfileById(userId);
+    }
+
     @GetMapping("/all-ids")
     public ResponseEntity<List<Integer>> getAllUserIds() {
         return userService.getAllUserIds();
