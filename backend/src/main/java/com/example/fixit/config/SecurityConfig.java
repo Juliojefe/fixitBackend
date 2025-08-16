@@ -51,7 +51,8 @@ public class SecurityConfig {
                                 "/login/oauth2/code/google",
                                 "/api/post/owned/{userId}",
                                 "/api/post/liked/{userId}",
-                                "/api/user/{id}"
+                                "/api/user/{id}",
+                                "/api/user/{id}/profile"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
