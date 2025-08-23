@@ -45,14 +45,18 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/auth/login",
                                 "/api/auth/register",
-                                "api/auth/register/google",
+                                "/api/auth/register/google",
                                 "/api/auth/refresh",
                                 "/oauth2/**",
                                 "/login/oauth2/code/google",
                                 "/api/post/owned/{userId}",
                                 "/api/post/liked/{userId}",
-                                "/api/user/{id}",
-                                "/api/user/{id}/profile"
+                                "/api/post/{id}",
+                                "/api/user/summary/{id}",
+                                "/api/user/{id}/profile",
+                                "/api/user/all-ids",
+                                "/api/user/summary/{id}",
+                                "/api/post/{id}"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
