@@ -32,17 +32,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         String token = getTokenFromRequest(request);
 
-        boolean isValid = tokenProvider.validateToken(token);
-        if (token != null && isValid) {
-            String username = tokenProvider.getEmail(token);
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+        if (token != null) { // Token was present, must validate
+            if (tokenProvider.validateToken(token)) { // Token valid now authenticate
+                String username = tokenProvider.getEmail(token);
+                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                    userDetails, null, userDetails.getAuthorities());
-            auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            SecurityContextHolder.getContext().setAuthentication(auth);
+                UsernamePasswordAuthenticationToken auth =
+                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                SecurityContextHolder.getContext().setAuthentication(auth);
+            } else {
+                // ❌ Token present but invalid → reject immediately
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid JWT token");
+                return;
+            }
         }
-
         filterChain.doFilter(request, response);
     }
 
