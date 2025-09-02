@@ -6,5 +6,5 @@ import java.util.List;
 import org.springframework.data.jpa.repository.Query;
 
 public interface MessageImageRepository extends JpaRepository<MessageImage, Integer> {
-
+    List<MessageImage> findByMessageMessageId(Integer messageId);   //  get images from a message by the message's id
 }
