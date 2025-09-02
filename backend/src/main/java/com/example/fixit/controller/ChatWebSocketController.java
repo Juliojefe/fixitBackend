@@ -29,7 +29,7 @@ public class ChatWebSocketController {
         if (principal == null) {
             return; // Handled by security config
         }
-        MessageDTO savedMessage = messageService.saveMessage(chatId, request.getContent(), principal.getName());
+        MessageDTO savedMessage = messageService.saveMessage(chatId, request.getContent(), principal.getName(), request.getImageUrls());
         messagingTemplate.convertAndSend("/topic/chat/" + chatId, savedMessage);
     }
 }

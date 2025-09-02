@@ -27,8 +27,7 @@ public class MessageController {
         if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        MessageDTO savedMessage = messageService.saveMessage(chatId, request.getContent(), principal.getName());
-        // Broadcast via WebSocket
+        MessageDTO savedMessage = messageService.saveMessage(chatId, request.getContent(), principal.getName(), request.getImageUrls());
         messagingTemplate.convertAndSend("/topic/chat/" + chatId, savedMessage);
         return ResponseEntity.ok(savedMessage);
     }
