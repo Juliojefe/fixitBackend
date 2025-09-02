@@ -8,26 +8,32 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ChatSummary {
+    private Integer chatId;
     private String name;
-    private Set<String> userNames;
-
-    public ChatSummary(String name, Set<String> userNames) {
-        this.name = name;
-        this.userNames = userNames;
-    }
+    private Set<Integer> userIds;
 
     public ChatSummary() {
+        this.chatId = -1;
         this.name = "";
-        userNames = new HashSet<>();
+        this.userIds = new HashSet<>();
     }
 
     public ChatSummary(Chat chat) {
+        this.chatId = chat.getChatId();
         this.name = chat.getName();
-        Set<String> userNames = new HashSet<>();
+        Set<Integer> userIds = new HashSet<>();
         for (User u : chat.getUsers()) {
-            userNames.add(u.getName());
+            userIds.add(u.getUserId());
         }
-        this.userNames = userNames;
+        this.userIds = userIds;
+    }
+
+    public Integer getChatId() {
+        return chatId;
+    }
+
+    public void setChatId(Integer chatId) {
+        this.chatId = chatId;
     }
 
     public String getName() {
@@ -38,11 +44,11 @@ public class ChatSummary {
         this.name = name;
     }
 
-    public Set<String> getUserNames() {
-        return userNames;
+    public Set<Integer> getUserIds() {
+        return userIds;
     }
 
-    public void setUserNames(Set<String> userNames) {
-        this.userNames = userNames;
+    public void setUserIds(Set<Integer> userIds) {
+        this.userIds = userIds;
     }
 }
