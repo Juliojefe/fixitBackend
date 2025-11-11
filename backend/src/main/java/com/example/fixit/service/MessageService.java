@@ -1,12 +1,11 @@
 package com.example.fixit.service;
 
-import com.example.fixit.dto.MessageDTO;
+import com.example.fixit.dto.response.MessageDTO;
 import com.example.fixit.model.Chat;
 import com.example.fixit.model.Message;
 import com.example.fixit.model.User;
 import com.example.fixit.model.MessageImage;
 import com.example.fixit.repository.ChatRepository;
-import com.example.fixit.repository.MessageImageRepository;
 import com.example.fixit.repository.MessageRepository;
 import com.example.fixit.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,8 +14,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
+
 import java.util.List;
 import java.util.stream.Collectors;
 

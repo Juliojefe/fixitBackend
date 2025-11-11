@@ -1,4 +1,4 @@
-package com.example.fixit.dto;
+package com.example.fixit.dto.request;
 
 public class UpdateNameRequest {
     private String name;

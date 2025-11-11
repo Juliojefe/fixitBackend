@@ -1,6 +1,6 @@
-package com.example.fixit.dto;
+package com.example.fixit.dto.response;
 
-public class UserRegisterResponse {
+public class UserLoginResponse {
     private String name;
     private String email;
     private String profilePic;
@@ -8,7 +8,9 @@ public class UserRegisterResponse {
     private String accessToken;
     private String refreshToken;
 
-    public UserRegisterResponse(String name, String email, String profilePic, boolean isGoogle, String accessToken, String refreshToken) {
+    public UserLoginResponse() {}
+
+    public UserLoginResponse (String name, String email, String profilePic, boolean isGoogle, String accessToken, String refreshToken) {
         this.name = name;
         this.email = email;
         this.profilePic = profilePic;

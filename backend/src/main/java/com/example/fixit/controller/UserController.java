@@ -1,15 +1,18 @@
 package com.example.fixit.controller;
 
-import com.example.fixit.dto.*;
-import com.example.fixit.model.User;
+import com.example.fixit.dto.request.UpdateEmailRequest;
+import com.example.fixit.dto.request.UpdateNameRequest;
+import com.example.fixit.dto.request.UpdatePasswordRequest;
+import com.example.fixit.dto.request.UpdateProfilePicRequest;
+import com.example.fixit.dto.response.GetUserProfilePrivateResponse;
+import com.example.fixit.dto.response.GetUserProfilePublicResponse;
+import com.example.fixit.dto.response.UserNameAndPfp;
 import com.example.fixit.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.HashSet;
-import java.util.Set;
 
 @RestController
 @RequestMapping("api/user")
@@ -18,32 +21,33 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @GetMapping
-    public List<GetUserResponse> getAllUsers() {
-        return userService.getAllUsers();
+    //  private response containing all users (pageable)
+    @GetMapping("/getAll")
+    public ResponseEntity<Page<GetUserProfilePrivateResponse>> getAllUsers(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(userService.getAllUsersPrivate(PageRequest.of(page, size)));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<GetUserResponse> getuserById(@PathVariable("id") int userId) {
-        //  verbose response containing all user details (protected)
-        return userService.getuserById(userId);
+    //  private verbose response containing all user details
+    @GetMapping("/{id}/profile/private")
+    public ResponseEntity<GetUserProfilePrivateResponse> getUserById(@PathVariable("id") int userId) {
+        return userService.getUserProfilePrivateById(userId);
     }
 
-    @GetMapping("/summary/{id}")
-    public UserSummary getuserSummaryById(@PathVariable("id") int userId) {
-        //  summary response containing only name and pfp
-        return userService.getuserSummaryById(userId);
+    //  public response containing only name and pfp
+    @GetMapping("/{id}/name-and-pfp")
+    public UserNameAndPfp getUserNameAndPfpById(@PathVariable("id") int userId) {
+        return userService.getUserNameAndPfpById(userId);
     }
 
-    @GetMapping("/{id}/profile")
-    public ResponseEntity<UserProfile> getUserProfileById(@PathVariable("id") int userId) {
-        //  public profile access
+    //  public profile access
+    @GetMapping("/{id}/profile/public")
+    public ResponseEntity<GetUserProfilePublicResponse> getUserProfileById(@PathVariable("id") int userId) {
         return userService.getUserProfileById(userId);
     }
 
     @GetMapping("/all-ids")
-    public ResponseEntity<List<Integer>> getAllUserIds() {
-        return userService.getAllUserIds();
+    public ResponseEntity<Page<Integer>> getAllUserIds(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+        return userService.getAllUserIds(PageRequest.of(page, size));
     }
 
     @PatchMapping("/update-name/{id}/name")

@@ -1,4 +1,4 @@
-package com.example.fixit.dto;
+package com.example.fixit.dto.request;
 
 public class UpdateProfilePicRequest {
     private int userId;

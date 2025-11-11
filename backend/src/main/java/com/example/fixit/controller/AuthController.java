@@ -1,23 +1,19 @@
 package com.example.fixit.controller;
 
 import com.example.fixit.component.JwtTokenProvider;
-import com.example.fixit.dto.*;
-import com.example.fixit.model.RefreshToken;
-import com.example.fixit.model.User;
+import com.example.fixit.dto.request.GoogleUserRegisterRequest;
+import com.example.fixit.dto.request.RefreshRequest;
+import com.example.fixit.dto.request.UserLoginRequest;
+import com.example.fixit.dto.request.UserRegisterRequest;
+import com.example.fixit.dto.response.RefreshResponse;
+import com.example.fixit.dto.response.UserLoginResponse;
+import com.example.fixit.dto.response.UserRegisterResponse;
 import com.example.fixit.repository.RefreshTokenRepository;
 import com.example.fixit.repository.UserRepository;
 import com.example.fixit.service.AuthService;
-import com.example.fixit.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 
 @RestController
 @RequestMapping("/api/auth")

@@ -1,11 +1,9 @@
 package com.example.fixit.controller;
 
-import com.example.fixit.component.JwtTokenProvider;
-import com.example.fixit.dto.*;
+import com.example.fixit.dto.response.MutualFollowResponse;
 import com.example.fixit.model.User;
 import com.example.fixit.repository.UserRepository;
 import com.example.fixit.service.FollowService;
-import com.example.fixit.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

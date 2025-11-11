@@ -1,7 +1,7 @@
 package com.example.fixit.controller;
 
-import com.example.fixit.dto.MessageDTO;
-import com.example.fixit.dto.MessageRequest;
+import com.example.fixit.dto.response.MessageDTO;
+import com.example.fixit.dto.request.MessageRequest;
 import com.example.fixit.service.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.DestinationVariable;

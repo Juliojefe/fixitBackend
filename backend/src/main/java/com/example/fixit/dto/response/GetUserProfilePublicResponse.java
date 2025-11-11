@@ -1,34 +1,30 @@
-package com.example.fixit.dto;
+package com.example.fixit.dto.response;
 
-import com.example.fixit.model.Chat;
 import com.example.fixit.model.Post;
 import com.example.fixit.model.User;
+
 import java.util.HashSet;
 import java.util.Set;
 
-public class GetUserResponse {
+public class GetUserProfilePublicResponse {
+
     private String name;
     private boolean isMechanic;
     private boolean isAdmin;
-    private Set<Integer> chatIds;
     private Set<Integer> followingIds;
     private Set<Integer> followerIds;
-    private Set<Integer> savedPostIds;
     private Set<Integer> likedPostIds;
     private Set<Integer> ownedPostIds;
     private int followerCount;
     private int followingCount;
     private String profilePicUrl;
 
-
-    public GetUserResponse() {
+    public GetUserProfilePublicResponse() {
         this.name = "";
         this.isMechanic = false;
         this.isAdmin = false;
-        this.chatIds = new HashSet<>();
         this.followingIds = new HashSet<>();
         this.followerIds = new HashSet<>();
-        this.savedPostIds = new HashSet<>();
         this.likedPostIds = new HashSet<>();
         this.ownedPostIds = new HashSet<>();
         this.followerCount = 0;
@@ -36,31 +32,17 @@ public class GetUserResponse {
         this.profilePicUrl = "";
     }
 
-    public GetUserResponse(User u) {
+    public GetUserProfilePublicResponse(User u) {
         this.name = u.getName();
         this.isMechanic = u.getUserRoles().getIsMechanic();
         this.isAdmin = u.getUserRoles().getIsAdmin();
-        this.chatIds = getChatIds(u.getChats());
         this.followingIds = getUserIds(u.getFollowing());
         this.followerIds = getUserIds(u.getFollowers());
-        this.savedPostIds = getPostIds(u.getSavedPosts());
         this.likedPostIds = getPostIds(u.getLikedPosts());
         this.ownedPostIds = getPostIds(u.getOwnedPosts());
         this.followerCount = followerIds.size();
         this.followingCount = followingIds.size();
         this.profilePicUrl = u.getProfilePic();
-    }
-
-    private Set<Integer> getChatIds(Set<Chat> chats) {
-        try {
-            Set<Integer> ids = new HashSet<>();
-            for (Chat cht : chats) {
-                ids.add(cht.getChatId());
-            }
-            return ids;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 
     private Set<Integer> getUserIds(Set<User> users) {
@@ -87,54 +69,6 @@ public class GetUserResponse {
         }
     }
 
-    private Set<ChatSummary> summarizeChat(Set<Chat> chats) {
-        try {
-            Set<ChatSummary> chatSum = new HashSet<>();
-            for (Chat cht : chats) {
-                chatSum.add(new ChatSummary(cht));
-            }
-            return chatSum;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private Set<UserSummary> summarizeUsers(Set<User> users) {
-        try {
-            Set<UserSummary> summary = new HashSet<>();
-            for (User u : users) {
-                summary.add(new UserSummary(u));
-            }
-            return summary;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private Set<PostSummary> summarizePosts(Set<Post> posts) {
-        try {
-            Set<PostSummary> pSum = new HashSet<>();
-            for (Post p : posts) {
-                pSum.add(new PostSummary(p));
-            }
-            return pSum;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public int getFollowerCount() {
-        return followerCount;
-    }
-
-    public void setFollowerCount(int followerCount) {
-        this.followerCount = followerCount;
-    }
-
-    public int getFollowingCount() {
-        return followingCount;
-    }
-
     public String getName() {
         return name;
     }
@@ -149,10 +83,6 @@ public class GetUserResponse {
 
     public void setProfilePicUrl(String profilePicUrl) {
         this.profilePicUrl = profilePicUrl;
-    }
-
-    public void setFollowingCount(int followingCount) {
-        this.followingCount = followingCount;
     }
 
     public boolean isMechanic() {
@@ -171,14 +101,6 @@ public class GetUserResponse {
         isAdmin = admin;
     }
 
-    public Set<Integer> getChatIds() {
-        return chatIds;
-    }
-
-    public void setChatIds(Set<Integer> chatIds) {
-        this.chatIds = chatIds;
-    }
-
     public Set<Integer> getFollowingIds() {
         return followingIds;
     }
@@ -195,14 +117,6 @@ public class GetUserResponse {
         this.followerIds = followerIds;
     }
 
-    public Set<Integer> getSavedPostIds() {
-        return savedPostIds;
-    }
-
-    public void setSavedPostIds(Set<Integer> savedPostIds) {
-        this.savedPostIds = savedPostIds;
-    }
-
     public Set<Integer> getLikedPostIds() {
         return likedPostIds;
     }
@@ -217,5 +131,21 @@ public class GetUserResponse {
 
     public void setOwnedPostIds(Set<Integer> ownedPostIds) {
         this.ownedPostIds = ownedPostIds;
+    }
+
+    public int getFollowerCount() {
+        return followerCount;
+    }
+
+    public void setFollowerCount(int followerCount) {
+        this.followerCount = followerCount;
+    }
+
+    public int getFollowingCount() {
+        return followingCount;
+    }
+
+    public void setFollowingCount(int followingCount) {
+        this.followingCount = followingCount;
     }
 }

@@ -1,6 +1,6 @@
 package com.example.fixit.controller;
 
-import com.example.fixit.dto.ImageRequest;
+import com.example.fixit.dto.request.ImageRequest;
 import com.example.fixit.model.MessageImage;
 import com.example.fixit.service.MessageImageService;
 import org.springframework.beans.factory.annotation.Autowired;

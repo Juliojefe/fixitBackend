@@ -1,22 +1,23 @@
-package com.example.fixit.dto;
+//	this is a comment
+package com.example.fixit.dto.response;
 
 import com.example.fixit.model.User;
 
-public class UserSummary {
+public class UserNameAndPfp {
     private String name;
     private String profilePic;
 
-    public UserSummary(String name, String profilePic) {
+    public UserNameAndPfp(String name, String profilePic) {
         this.name = name;
         this.profilePic = profilePic;
     }
 
-    public UserSummary(User u) {
+    public UserNameAndPfp(User u) {
         this.name = u.getName();
         this.profilePic = u.getProfilePic();
     }
 
-    public UserSummary() {
+    public UserNameAndPfp() {
         this.name = "";
         this.profilePic = "";
     }

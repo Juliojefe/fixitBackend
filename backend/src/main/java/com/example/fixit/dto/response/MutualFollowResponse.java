@@ -1,10 +1,8 @@
-package com.example.fixit.dto;
+package com.example.fixit.dto.response;
 
 import com.example.fixit.model.User;
 
-import java.util.Optional;
-
-public class MutualFollowResponse extends UserSummary {
+public class MutualFollowResponse extends UserNameAndPfp {
     private boolean follows;
     private boolean followsBack;
 

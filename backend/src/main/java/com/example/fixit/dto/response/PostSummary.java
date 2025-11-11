@@ -1,9 +1,8 @@
-package com.example.fixit.dto;
+package com.example.fixit.dto.response;
 
 import com.example.fixit.model.Post;
 import com.example.fixit.model.PostImage;
 import com.example.fixit.model.User;
-import jakarta.persistence.criteria.CriteriaBuilder;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -91,11 +90,11 @@ public class PostSummary {
         }
     }
 
-    private Set<UserSummary> summarizeUsers(Set<User> users) {
+    private Set<UserNameAndPfp> summarizeUsers(Set<User> users) {
         try {
-            Set<UserSummary> summary = new HashSet<>();
+            Set<UserNameAndPfp> summary = new HashSet<>();
             for (User u : users) {
-                summary.add(new UserSummary(u));
+                summary.add(new UserNameAndPfp(u));
             }
             return summary;
         } catch (Exception e) {

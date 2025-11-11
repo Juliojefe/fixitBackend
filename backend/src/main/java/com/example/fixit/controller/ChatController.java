@@ -1,7 +1,7 @@
 package com.example.fixit.controller;
 
-import com.example.fixit.dto.ChatCreateRequest;
-import com.example.fixit.dto.ChatSummary;
+import com.example.fixit.dto.request.ChatCreateRequest;
+import com.example.fixit.dto.response.ChatSummary;
 import com.example.fixit.model.Chat;
 import com.example.fixit.model.User;
 import com.example.fixit.repository.UserRepository;

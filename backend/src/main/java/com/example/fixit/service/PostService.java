@@ -1,8 +1,8 @@
 package com.example.fixit.service;
 
-import com.example.fixit.dto.CreatePostRequestImages;
-import com.example.fixit.dto.CreatePostRequestUrl;
-import com.example.fixit.dto.PostSummary;
+import com.example.fixit.dto.request.CreatePostRequestImages;
+import com.example.fixit.dto.request.CreatePostRequestUrl;
+import com.example.fixit.dto.response.PostSummary;
 import com.example.fixit.model.Post;
 import com.example.fixit.model.PostImage;
 import com.example.fixit.model.User;
