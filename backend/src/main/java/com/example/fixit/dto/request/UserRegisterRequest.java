@@ -4,15 +4,23 @@ public class UserRegisterRequest {
     private String name;
     private String email;
     private String password;
+    private String confirmPassword;
     private String profilePic;
 
-    public UserRegisterRequest() {}
-
-    public UserRegisterRequest(String name, String email, String password, String profilePic) {
+    public UserRegisterRequest(String name, String email, String password, String confirmPassword, String profilePic) {
         this.name = name;
         this.email = email;
         this.password = password;
+        this.confirmPassword = confirmPassword;
         this.profilePic = profilePic;
+    }
+
+    public String getConfirmPassword() {
+        return confirmPassword;
+    }
+
+    public void setConfirmPassword(String confirmPassword) {
+        this.confirmPassword = confirmPassword;
     }
 
     public String getName() {
