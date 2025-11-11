@@ -1,22 +1,17 @@
 package com.example.fixit.service;
 
-import com.example.fixit.controller.UserController;
 import com.example.fixit.dto.*;
-import com.example.fixit.model.Chat;
-import com.example.fixit.model.Post;
 import com.example.fixit.model.User;
-import com.example.fixit.model.UserRoles;
 import com.example.fixit.repository.UserRepository;
 import com.example.fixit.repository.UserRolesRepository;
-import jakarta.transaction.Transactional;
-import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.List;
@@ -33,22 +28,22 @@ public class UserService {
     @Autowired
     private UserRolesRepository userRolesRepository;
 
-    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     //  For admins only
-    public List<GetUserResponse> getAllUsers() {
+    public Page<GetUserResponse> getAllUsers(Pageable pageable) {
         try {
-            List<User> allUsers = userRepository.findAll();
-            List<GetUserResponse> response = new ArrayList<>();
-            for(User u : allUsers) {
-                response.add(new GetUserResponse(u));
+            Page<User> userPage = userRepository.findAll(pageable);
+            List<GetUserResponse> responseList = new ArrayList<>();
+            for (User u : userPage.getContent()) {
+                responseList.add(new GetUserResponse(u));
             }
-            return response;
+            return new PageImpl<>(responseList, pageable, userPage.getTotalElements());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
+
 
     public ResponseEntity<GetUserResponse> getuserById(int userId) {
         try {
@@ -123,10 +118,8 @@ public class UserService {
                 User tempUser = user.get();
                 tempUser.setName(request.getName().trim());
                 userRepository.save(tempUser);
-                logger.info("User name updated logged successfully");
                 return true;
             }
-            logger.warn("User with id:{} was not found", request.getUserId());
             return false;
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -141,20 +134,16 @@ public class UserService {
                 User numUser = idUser.get();
                 User strUser = emailUser.get();
                 if (!Objects.equals(numUser.getUserId(), strUser.getUserId())) {
-                    logger.warn("email in use");
                     return false;
                 }
-                logger.info("no need to update, user is already using that email");
                 return false;
             }
             if (idUser.isPresent()) {
                 User tempUser = idUser.get();
                 tempUser.setEmail(request.getEmail());
                 userRepository.save(tempUser);
-                logger.info("email update successfully");
                 return true;
             }
-            logger.warn("User with id:{} was not found", request.getUserId());
             return false;
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -167,7 +156,6 @@ public class UserService {
             if (user.isPresent()) {
                 User tempUser = user.get();
                 if (tempUser.getPassword() == null && tempUser.getGoogleId() != null) {
-                    logger.warn("Password update failed: google users blocked");
                     return false;
                 }
                 String oldPassword = request.getOldPassword().trim();
@@ -175,16 +163,13 @@ public class UserService {
                 String newPassword = request.getNewPassword().trim();
                 if (passwordEncoder.matches(oldPassword, storedHashedPassword)) {
                     if (!isValidPassword(newPassword)) {
-                        logger.warn("Password update failed: Invalid new password for user id {}", request.getUserId());
                         return false;
                     }
                     tempUser.setPassword(passwordEncoder.encode(newPassword).trim());
                     userRepository.save(tempUser);
-                    logger.info("password update successfully");
                     return true;
                 }
             }
-            logger.warn("password mismatch or non-existent user with id:{}", request.getUserId());
             return false;
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -200,7 +185,6 @@ public class UserService {
                 userRepository.save(tempUser);
                 return true;
             }
-            logger.warn("User with id:{} was not found", requestUserId);
             return false;
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -216,7 +200,6 @@ public class UserService {
                 userRepository.save(tempUser);
                 return true;
             }
-            logger.warn("User with id:{} was not found", requestUserId);
             return false;
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -233,7 +216,6 @@ public class UserService {
                 userRepository.save(tempUser);
                 return true;
             }
-            logger.warn("User with id:{} was not found", requestUserId);
             return false;
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -249,7 +231,6 @@ public class UserService {
                 userRepository.save(tempUser);
                 return true;
             }
-            logger.warn("User with id:{} was not found", request.getUserId());
             return false;
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -264,7 +245,6 @@ public class UserService {
                 userRepository.delete(tempUser);
                 return true;
             }
-            logger.warn("User with id:{} was not found", requestUserId);
             return false;
         } catch (Exception e) {
             throw new RuntimeException(e);

@@ -4,6 +4,8 @@ import com.example.fixit.dto.*;
 import com.example.fixit.model.User;
 import com.example.fixit.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,15 +19,15 @@ public class UserController {
 
     @Autowired
     private UserService userService;
-
-    @GetMapping
-    public List<GetUserResponse> getAllUsers() {
-        return userService.getAllUsers();
+    @GetMapping("/getAll")
+    public Page<GetUserResponse> getAllUsers(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+        return userService.getAllUsers(PageRequest.of(page, size));
     }
 
+
+    //  verbose response containing all user details (protected)
     @GetMapping("/{id}")
     public ResponseEntity<GetUserResponse> getuserById(@PathVariable("id") int userId) {
-        //  verbose response containing all user details (protected)
         return userService.getuserById(userId);
     }
 
