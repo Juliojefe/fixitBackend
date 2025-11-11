@@ -5,9 +5,8 @@ import com.example.fixit.dto.request.GoogleUserRegisterRequest;
 import com.example.fixit.dto.request.RefreshRequest;
 import com.example.fixit.dto.request.UserLoginRequest;
 import com.example.fixit.dto.request.UserRegisterRequest;
+import com.example.fixit.dto.response.AuthResponse;
 import com.example.fixit.dto.response.RefreshResponse;
-import com.example.fixit.dto.response.UserLoginResponse;
-import com.example.fixit.dto.response.UserRegisterResponse;
 import com.example.fixit.model.*;
 import com.example.fixit.repository.RefreshTokenRepository;
 import com.example.fixit.repository.UserRepository;
@@ -36,191 +35,171 @@ public class AuthService {
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    public ResponseEntity<UserRegisterResponse> register(UserRegisterRequest request) {
-        try {
-            Optional<User> tempUser = userRepository.findByEmail(request.getEmail().trim());
-            if (tempUser.isPresent()) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new UserRegisterResponse( "Email already in use", "", "", false, "", ""));
-            }
-            if (!isValidPassword(request.getPassword())) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new UserRegisterResponse(
-                                "Invalid password:\n• At least 8 characters long\n• At least one uppercase letter\n• At least one lowercase letter\n• At least one number\n• At least one special character",
-                                "", "",  false, "", ""));
-            }
-            if (!request.getEmail().trim().contains("@") || request.getEmail().trim().length() < 4) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new UserRegisterResponse( "Invalid email", "", "",  false,  "", ""));
-            }
-            String[] name = request.getName().trim().split("\\s+");
-            if (name.length != 2 || name[0].length() < 2 || name[1].length() < 2) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new UserRegisterResponse( "Invalid first or last name", "", "",  false, "", ""));
-            }
-            User newUser = new User();
-            newUser.setEmail(request.getEmail().trim());
-            if (request.getProfilePic().isEmpty() || request.getProfilePic() == null) {
-                newUser.setProfilePic("https://ui-avatars.com/api/?name=User&background=cccccc&color=222222&size=128");
-            } else {
-                newUser.setProfilePic(request.getProfilePic().trim());
-            }
-            newUser.setName(request.getName().trim());
-            newUser.setPassword(passwordEncoder.encode(request.getPassword()).trim());
-            newUser.setGoogleId(null);
-            newUser.setChats(new HashSet<Chat>());
-            newUser.setFollowing(new HashSet<User>());
-            newUser.setFollowers(new HashSet<User>());
-            newUser.setSavedPosts(new HashSet<Post>());
-            newUser.setLikedPosts(new HashSet<Post>());
-            newUser.setOwnedPosts(new HashSet<Post>());
-            UserRoles userRoles = new UserRoles();
-            userRoles.setUser(newUser);
-            userRoles.setIsAdmin(false);
-            userRoles.setIsMechanic(false);
-            newUser.setUserRoles(userRoles);
-            userRepository.save(newUser);
-            String accessToken = jwtTokenProvider.createAccessToken(newUser.getEmail(), newUser.getUserId());
-            String refreshToken = jwtTokenProvider.createRefreshToken(newUser.getEmail(), newUser.getUserId());
-            RefreshToken refreshTokenEntity = new RefreshToken();
-            refreshTokenEntity.setToken(refreshToken);
-            refreshTokenEntity.setUser(newUser);
-            refreshTokenEntity.setExpiryDate(Instant.now().plus(7, ChronoUnit.DAYS));
-            refreshTokenRepository.save(refreshTokenEntity);
-            return ResponseEntity.ok(new UserRegisterResponse(newUser.getName(), newUser.getEmail(), newUser.getProfilePic(), false, accessToken, refreshToken));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+    public ResponseEntity<AuthResponse> register(UserRegisterRequest request) {
+        String email = request.getEmail() != null ? request.getEmail().trim() : "";
+        String password = request.getPassword() != null ? request.getPassword().trim() : "";
+        String confirmPassword = request.getConfirmPassword() != null ? request.getConfirmPassword().trim() : "";
+        String name = request.getName() != null ? request.getName().trim() : "";
+        String profilePic = request.getProfilePic() != null ? request.getProfilePic().trim() : getDefaultProfilePic();
+
+        if (!password.equals(confirmPassword)) {
+            return unauthorized(new AuthResponse("Passwords do not match"));
         }
+
+        Optional<User> existingUser = userRepository.findByEmail(email);
+        if (existingUser.isPresent()) {
+            return unauthorized(new AuthResponse("Email already in use"));
+        }
+
+        if (!isValidPassword(password)) {
+            return unauthorized(new AuthResponse(
+                    "Invalid password:\n• At least 8 characters long\n• At least one uppercase letter\n• At least one lowercase letter\n• At least one number\n• At least one special character"));
+        }
+
+        if (!email.contains("@") || email.length() < 4) {
+            return unauthorized(new AuthResponse("Invalid email"));
+        }
+
+        String[] nameParts = name.split("\\s+");
+        if (nameParts.length != 2 || nameParts[0].length() < 2 || nameParts[1].length() < 2) {
+            return unauthorized(new AuthResponse("Invalid first or last name"));
+        }
+
+        User newUser = new User();
+        newUser.setEmail(email);
+        newUser.setName(name);
+        newUser.setProfilePic(profilePic);
+        newUser.setPassword(passwordEncoder.encode(password));
+        newUser.setGoogleId(null);
+        initializeUserCollections(newUser);
+        userRepository.save(newUser);
+
+        return createSuccessResponse(newUser, false);
     }
 
-    public ResponseEntity<UserRegisterResponse> googleRegister(GoogleUserRegisterRequest request) {
-        try {
-            Optional<User> tempUser = userRepository.findByEmail(request.getEmail().trim());
-            if (tempUser.isPresent()) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new UserRegisterResponse( "Email already in use", "", "", false, "", ""));
-            }
+    public ResponseEntity<AuthResponse> googleRegister(GoogleUserRegisterRequest request) {
+        String email = request.getEmail() != null ? request.getEmail().trim() : "";
+        String name = request.getName() != null ? request.getName().trim() : "";
+        String googleId = request.getGoogleId() != null ? request.getGoogleId().trim() : "";
+        String profilePic = request.getProfilePic() != null ? request.getProfilePic().trim() : getDefaultProfilePic();
 
-            Optional<User> googleUser = userRepository.findByGoogleId(request.getGoogleId().trim());
-            if (googleUser.isPresent()) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new UserRegisterResponse( "Google ID already registered", "", "",  false, "", ""));
-            }
-
-            if (!request.getEmail().trim().contains("@") || request.getEmail().trim().length() < 4) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new UserRegisterResponse( "Invalid email", "", "", false, "", ""));
-            }
-
-            String[] name = request.getName().trim().split("\\s+");
-            if (name.length != 2 || name[0].length() < 2 || name[1].length() < 2) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new UserRegisterResponse( "Invalid first or last name", "", "", false, "", ""));
-            }
-            User newUser = new User();
-            newUser.setEmail(request.getEmail().trim());
-            if (request.getProfilePic().isEmpty() || request.getProfilePic() == null) {
-                newUser.setProfilePic("https://ui-avatars.com/api/?name=User&background=cccccc&color=222222&size=128");
-            } else {
-                newUser.setProfilePic(request.getProfilePic().trim());
-            }
-            newUser.setName(request.getName().trim());
-            newUser.setPassword(null); // No password for Google users
-            newUser.setGoogleId(request.getGoogleId().trim());
-            newUser.setChats(new HashSet<Chat>());
-            newUser.setFollowing(new HashSet<User>());
-            newUser.setFollowers(new HashSet<User>());
-            newUser.setSavedPosts(new HashSet<Post>());
-            newUser.setLikedPosts(new HashSet<Post>());
-            newUser.setOwnedPosts(new HashSet<Post>());
-            UserRoles userRoles = new UserRoles();
-            userRoles.setUser(newUser);
-            userRoles.setIsAdmin(false);
-            userRoles.setIsMechanic(false);
-            newUser.setUserRoles(userRoles);
-            userRepository.save(newUser);
-            String accessToken = jwtTokenProvider.createAccessToken(newUser.getEmail(), newUser.getUserId());
-            String refreshToken = jwtTokenProvider.createRefreshToken(newUser.getEmail(), newUser.getUserId());
-            RefreshToken refreshTokenEntity = new RefreshToken();
-            refreshTokenEntity.setToken(refreshToken);
-            refreshTokenEntity.setUser(newUser);
-            refreshTokenEntity.setExpiryDate(Instant.now().plus(7, ChronoUnit.DAYS));
-            refreshTokenRepository.save(refreshTokenEntity);
-            return ResponseEntity.ok(new UserRegisterResponse(newUser.getName(), newUser.getEmail(), newUser.getProfilePic(), false, accessToken, refreshToken));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        Optional<User> existingUser = userRepository.findByEmail(email);
+        if (existingUser.isPresent()) {
+            return unauthorized(new AuthResponse("Email already in use"));
         }
+
+        Optional<User> existingGoogleUser = userRepository.findByGoogleId(googleId);
+        if (existingGoogleUser.isPresent()) {
+            return unauthorized(new AuthResponse("Google ID already registered"));
+        }
+
+        if (!email.contains("@") || email.length() < 4) {
+            return unauthorized(new AuthResponse("Invalid email"));
+        }
+
+        String[] nameParts = name.split("\\s+");
+        if (nameParts.length != 2 || nameParts[0].length() < 2 || nameParts[1].length() < 2) {
+            return unauthorized(new AuthResponse("Invalid first or last name"));
+        }
+
+        User newUser = new User();
+        newUser.setEmail(email);
+        newUser.setName(name);
+        newUser.setProfilePic(profilePic);
+        newUser.setPassword(null);
+        newUser.setGoogleId(googleId);
+        initializeUserCollections(newUser);
+        userRepository.save(newUser);
+
+        return createSuccessResponse(newUser, true);
     }
 
-    public ResponseEntity<UserLoginResponse> login(UserLoginRequest loginRequest) {
-        try {
-            Optional<User> tempUser = userRepository.findByEmail(loginRequest.getEmail().trim());
-            if (tempUser.isPresent() && passwordEncoder.matches(loginRequest.getPassword().trim(), tempUser.get().getPassword())) {
-                User user = tempUser.get();
-                String accessToken = jwtTokenProvider.createAccessToken(user.getEmail(), user.getUserId());
-                String refreshToken = jwtTokenProvider.createRefreshToken(user.getEmail(), user.getUserId());
-                RefreshToken refreshTokenEntity = new RefreshToken();
-                refreshTokenEntity.setToken(refreshToken);
-                refreshTokenEntity.setUser(user);
-                refreshTokenEntity.setExpiryDate(Instant.now().plus(7, ChronoUnit.DAYS));
-                refreshTokenRepository.save(refreshTokenEntity);
-                return ResponseEntity.ok(new UserLoginResponse(user.getName(), user.getEmail(), user.getProfilePic(), false, accessToken, refreshToken));
-            } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new UserLoginResponse("", "", "", false, "", ""));
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+    public ResponseEntity<AuthResponse> login(UserLoginRequest loginRequest) {
+        String email = loginRequest.getEmail() != null ? loginRequest.getEmail().trim() : "";
+        String password = loginRequest.getPassword() != null ? loginRequest.getPassword().trim() : "";
+
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isEmpty() || !passwordEncoder.matches(password, userOpt.get().getPassword())) {
+            return unauthorized(new AuthResponse("Invalid email or password"));
         }
+
+        User user = userOpt.get();
+        return createSuccessResponse(user, false);
     }
 
-    public ResponseEntity<UserLoginResponse> googleLogin(String googleId) {
-        try {
-            Optional<User> tempUser = userRepository.findByGoogleId(googleId.trim());
-            if (tempUser.isPresent()) {
-                User user = tempUser.get();
-                String accessToken = jwtTokenProvider.createAccessToken(user.getEmail(), user.getUserId());
-                String refreshToken = jwtTokenProvider.createRefreshToken(user.getEmail(), user.getUserId());
-                RefreshToken refreshTokenEntity = new RefreshToken();
-                refreshTokenEntity.setToken(refreshToken);
-                refreshTokenEntity.setUser(user);
-                refreshTokenEntity.setExpiryDate(Instant.now().plus(7, ChronoUnit.DAYS));
-                refreshTokenRepository.save(refreshTokenEntity);
-                return ResponseEntity.ok(new UserLoginResponse(user.getName(), user.getEmail(), user.getProfilePic(), true, accessToken, refreshToken));
-            }
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new UserLoginResponse("Google user not found, please register first", "", "", false, "", ""));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+    public ResponseEntity<AuthResponse> googleLogin(String googleId) {
+        googleId = googleId != null ? googleId.trim() : "";
+
+        Optional<User> userOpt = userRepository.findByGoogleId(googleId);
+        if (userOpt.isEmpty()) {
+            return unauthorized(new AuthResponse("Google user not found, please register first"));
         }
+
+        User user = userOpt.get();
+        return createSuccessResponse(user, true);
     }
 
     public ResponseEntity<RefreshResponse> refreshToken(RefreshRequest refreshRequest) {
         String refreshToken = refreshRequest.getRefreshToken();
-        // Validate refresh token
-        RefreshToken tokenEntity = refreshTokenRepository.findByToken(refreshToken).orElseThrow(() -> new RuntimeException("Invalid refresh token"));
+
+        Optional<RefreshToken> tokenOpt = refreshTokenRepository.findByToken(refreshToken);
+        if (tokenOpt.isEmpty()) {
+            return unauthorized(new RefreshResponse(null)); // Or throw, but keeping consistent with original
+        }
+
+        RefreshToken tokenEntity = tokenOpt.get();
         if (tokenEntity.getExpiryDate().isBefore(Instant.now())) {
             refreshTokenRepository.deleteByToken(refreshToken);
-            throw new RuntimeException("Refresh token expired");
+            return unauthorized(new RefreshResponse(null)); // Or throw
         }
+
         User user = tokenEntity.getUser();
         String newAccessToken = jwtTokenProvider.createAccessToken(user.getEmail(), user.getUserId());
 
         return ResponseEntity.ok(new RefreshResponse(newAccessToken));
     }
 
-    public boolean isValidPassword(String password) {
-        try {
-            if (password == null || password.length() < 8) {
-                return false;
-            }
-            String passwordRegex = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[!@#$%^&*()_\\+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]).{8,}$";
-            return password.matches(passwordRegex);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+    private boolean isValidPassword(String password) {
+        if (password == null || password.length() < 8) {
+            return false;
         }
+        String passwordRegex = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[!@#$%^&*()_\\+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]).{8,}$";
+        return password.matches(passwordRegex);
     }
 
+    private String getDefaultProfilePic() {
+        return "https://ui-avatars.com/api/?name=User&background=cccccc&color=222222&size=128";
+    }
 
+    private void initializeUserCollections(User user) {
+        user.setChats(new HashSet<>());
+        user.setFollowing(new HashSet<>());
+        user.setFollowers(new HashSet<>());
+        user.setSavedPosts(new HashSet<>());
+        user.setLikedPosts(new HashSet<>());
+        user.setOwnedPosts(new HashSet<>());
 
+        UserRoles userRoles = new UserRoles();
+        userRoles.setUser(user);
+        userRoles.setIsAdmin(false);
+        userRoles.setIsMechanic(false);
+        user.setUserRoles(userRoles);
+    }
+
+    private ResponseEntity<AuthResponse> createSuccessResponse(User user, boolean isGoogle) {
+        String accessToken = jwtTokenProvider.createAccessToken(user.getEmail(), user.getUserId());
+        String refreshToken = jwtTokenProvider.createRefreshToken(user.getEmail(), user.getUserId());
+
+        RefreshToken refreshTokenEntity = new RefreshToken();
+        refreshTokenEntity.setToken(refreshToken);
+        refreshTokenEntity.setUser(user);
+        refreshTokenEntity.setExpiryDate(Instant.now().plus(7, ChronoUnit.DAYS));
+        refreshTokenRepository.save(refreshTokenEntity);
+
+        return ResponseEntity.ok(new AuthResponse(user.getName(), user.getEmail(), user.getProfilePic(), isGoogle, accessToken, refreshToken));
+    }
+
+    private <T> ResponseEntity<T> unauthorized(T body) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(body);
+    }
 }

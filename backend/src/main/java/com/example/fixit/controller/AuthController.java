@@ -5,9 +5,8 @@ import com.example.fixit.dto.request.GoogleUserRegisterRequest;
 import com.example.fixit.dto.request.RefreshRequest;
 import com.example.fixit.dto.request.UserLoginRequest;
 import com.example.fixit.dto.request.UserRegisterRequest;
+import com.example.fixit.dto.response.AuthResponse;
 import com.example.fixit.dto.response.RefreshResponse;
-import com.example.fixit.dto.response.UserLoginResponse;
-import com.example.fixit.dto.response.UserRegisterResponse;
 import com.example.fixit.repository.RefreshTokenRepository;
 import com.example.fixit.repository.UserRepository;
 import com.example.fixit.service.AuthService;
@@ -20,34 +19,27 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     @Autowired
-    private JwtTokenProvider jwtTokenProvider;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private RefreshTokenRepository refreshTokenRepository;
-
-    @Autowired
     private AuthService authService;
 
+    // Note: Removed unused autowired fields (JwtTokenProvider, UserRepository, RefreshTokenRepository) as they are now handled in the service
+
     @PostMapping("/register")
-    public ResponseEntity<UserRegisterResponse> register(@RequestBody UserRegisterRequest request) {
+    public ResponseEntity<AuthResponse> register(@RequestBody UserRegisterRequest request) {
         return authService.register(request);
     }
 
     @PatchMapping("/register/google/")
-    public ResponseEntity<UserRegisterResponse> googleRegister(@RequestBody GoogleUserRegisterRequest request) {
+    public ResponseEntity<AuthResponse> googleRegister(@RequestBody GoogleUserRegisterRequest request) {
         return authService.googleRegister(request);
     }
 
-        @PostMapping("/login")
-    public ResponseEntity<UserLoginResponse> login(@RequestBody UserLoginRequest loginRequest) {
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponse> login(@RequestBody UserLoginRequest loginRequest) {
         return authService.login(loginRequest);
     }
 
     @PostMapping("/login/google")
-    public ResponseEntity<UserLoginResponse> googleLogin(@RequestBody String googleId) {
+    public ResponseEntity<AuthResponse> googleLogin(@RequestBody String googleId) {
         return authService.googleLogin(googleId);
     }
 

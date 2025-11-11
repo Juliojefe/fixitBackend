@@ -1,9 +1,8 @@
 package com.example.fixit.component;
 
 import com.example.fixit.service.AuthService;
-import com.example.fixit.dto.response.UserLoginResponse;
 import com.example.fixit.dto.request.GoogleUserRegisterRequest;
-import com.example.fixit.dto.response.UserRegisterResponse;
+import com.example.fixit.dto.response.AuthResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,46 +37,38 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
             throw new IllegalArgumentException("Missing required attributes from Google: email, name, or sub");
         }
 
-        ResponseEntity<UserLoginResponse> loginEntity = authService.googleLogin(googleId);
-        UserLoginResponse loginResponse = loginEntity.getBody();
-
-        if (loginEntity.getStatusCode().is2xxSuccessful() && loginResponse != null) {
-            // If login is successful, build the redirect URL with the login response
-            buildRedirect(response, loginResponse);
+        ResponseEntity<AuthResponse> loginEntity = authService.googleLogin(googleId);
+        if (loginEntity.getStatusCode().is2xxSuccessful()) {
+            buildRedirect(response, loginEntity.getBody(), true);
         } else {
-            // If login fails (user doesn't exist), register them and build the redirect URL
+            // If login fails (user doesn't exist), attempt to register
             String finalProfilePic = (profilePic != null) ? profilePic : "";
             GoogleUserRegisterRequest registerRequest = new GoogleUserRegisterRequest(googleId, email, name, finalProfilePic);
-            ResponseEntity<UserRegisterResponse> registerEntity = authService.googleRegister(registerRequest);
-            buildRedirect(response, registerEntity.getBody());
+            ResponseEntity<AuthResponse> registerEntity = authService.googleRegister(registerRequest);
+            boolean isSuccess = registerEntity.getStatusCode().is2xxSuccessful();
+            buildRedirect(response, registerEntity.getBody(), isSuccess);
         }
     }
 
-    // A helper method to build the redirect URL using UriComponentsBuilder
-    private void buildRedirect(HttpServletResponse response, Object data) throws IOException {
+    // Updated helper method to build the redirect URL using UriComponentsBuilder
+    private void buildRedirect(HttpServletResponse response, AuthResponse authResponse, boolean isSuccess) throws IOException {
         String baseUrl = "http://localhost:3000/auth-callback";
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl)
-                .queryParam("success", "true");
+                .queryParam("success", String.valueOf(isSuccess));
 
-        if (data instanceof UserLoginResponse) {
-            UserLoginResponse res = (UserLoginResponse) data;
-            uriBuilder.queryParam("name", res.getName());
-            uriBuilder.queryParam("email", res.getEmail());
-            uriBuilder.queryParam("profilePic", res.getProfilePic());
-            uriBuilder.queryParam("isGoogle", res.isGoogle());
-            uriBuilder.queryParam("accessToken", res.getAccessToken());
-            uriBuilder.queryParam("refreshToken", res.getRefreshToken());
-        } else if (data instanceof UserRegisterResponse) {
-            UserRegisterResponse res = (UserRegisterResponse) data;
-            uriBuilder.queryParam("name", res.getName());
-            uriBuilder.queryParam("email", res.getEmail());
-            uriBuilder.queryParam("profilePic", res.getProfilePic());
-            uriBuilder.queryParam("isGoogle", res.isGoogle());
-            uriBuilder.queryParam("accessToken", res.getAccessToken());
-            uriBuilder.queryParam("refreshToken", res.getRefreshToken());
+        if (isSuccess && authResponse != null && authResponse.getAccessToken() != null) {
+            uriBuilder.queryParam("name", authResponse.getName());
+            uriBuilder.queryParam("email", authResponse.getEmail());
+            uriBuilder.queryParam("profilePic", authResponse.getProfilePic());
+            uriBuilder.queryParam("isGoogle", authResponse.isGoogle());
+            uriBuilder.queryParam("accessToken", authResponse.getAccessToken());
+            uriBuilder.queryParam("refreshToken", authResponse.getRefreshToken());
+        } else if (authResponse != null && authResponse.getMessage() != null) {
+            uriBuilder.queryParam("message", authResponse.getMessage());
         } else {
-            throw new IllegalArgumentException("Unsupported response type for redirect");
+            uriBuilder.queryParam("message", "An unexpected error occurred");
         }
+
         response.sendRedirect(uriBuilder.toUriString());
     }
 }
