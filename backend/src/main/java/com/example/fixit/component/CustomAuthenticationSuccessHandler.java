@@ -1,9 +1,9 @@
 package com.example.fixit.component;
 
 import com.example.fixit.service.AuthService;
-import com.example.fixit.dto.UserLoginResponse;
-import com.example.fixit.dto.GoogleUserRegisterRequest;
-import com.example.fixit.dto.UserRegisterResponse;
+import com.example.fixit.dto.response.UserLoginResponse;
+import com.example.fixit.dto.request.GoogleUserRegisterRequest;
+import com.example.fixit.dto.response.UserRegisterResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;

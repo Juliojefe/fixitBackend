@@ -1,6 +1,12 @@
 package com.example.fixit.service;
 
-import com.example.fixit.dto.*;
+import com.example.fixit.dto.request.UpdateEmailRequest;
+import com.example.fixit.dto.request.UpdateNameRequest;
+import com.example.fixit.dto.request.UpdatePasswordRequest;
+import com.example.fixit.dto.request.UpdateProfilePicRequest;
+import com.example.fixit.dto.response.GetUserProfilePrivateResponse;
+import com.example.fixit.dto.response.GetUserProfilePublicResponse;
+import com.example.fixit.dto.response.UserNameAndPfp;
 import com.example.fixit.model.User;
 import com.example.fixit.repository.UserRepository;
 import com.example.fixit.repository.UserRolesRepository;

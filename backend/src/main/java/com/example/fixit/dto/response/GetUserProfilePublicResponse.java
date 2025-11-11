@@ -1,6 +1,5 @@
-package com.example.fixit.dto;
+package com.example.fixit.dto.response;
 
-import com.example.fixit.model.Chat;
 import com.example.fixit.model.Post;
 import com.example.fixit.model.User;
 

@@ -1,12 +1,11 @@
 package com.example.fixit.service;
-import com.example.fixit.dto.*;
+import com.example.fixit.dto.response.MutualFollowResponse;
 import com.example.fixit.model.User;
 import com.example.fixit.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.Optional;
 

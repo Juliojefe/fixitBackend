@@ -1,4 +1,4 @@
-package com.example.fixit.dto;
+package com.example.fixit.dto.response;
 
 public class RefreshResponse {
     private String accessToken;

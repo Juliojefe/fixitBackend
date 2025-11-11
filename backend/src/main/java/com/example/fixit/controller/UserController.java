@@ -1,17 +1,18 @@
 package com.example.fixit.controller;
 
-import com.example.fixit.dto.*;
-import com.example.fixit.model.User;
+import com.example.fixit.dto.request.UpdateEmailRequest;
+import com.example.fixit.dto.request.UpdateNameRequest;
+import com.example.fixit.dto.request.UpdatePasswordRequest;
+import com.example.fixit.dto.request.UpdateProfilePicRequest;
+import com.example.fixit.dto.response.GetUserProfilePrivateResponse;
+import com.example.fixit.dto.response.GetUserProfilePublicResponse;
+import com.example.fixit.dto.response.UserNameAndPfp;
 import com.example.fixit.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.HashSet;
-import java.util.Set;
 
 @RestController
 @RequestMapping("api/user")

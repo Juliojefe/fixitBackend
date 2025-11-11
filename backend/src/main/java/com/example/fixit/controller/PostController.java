@@ -1,14 +1,11 @@
 package com.example.fixit.controller;
 
-import com.example.fixit.dto.CreatePostRequestImages;
-import com.example.fixit.dto.CreatePostRequestUrl;
-import com.example.fixit.dto.PostSummary;
-import com.example.fixit.model.Post;
+import com.example.fixit.dto.request.CreatePostRequestImages;
+import com.example.fixit.dto.request.CreatePostRequestUrl;
+import com.example.fixit.dto.response.PostSummary;
 import com.example.fixit.model.User;
 import com.example.fixit.repository.UserRepository;
 import com.example.fixit.service.PostService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -1,4 +1,4 @@
-package com.example.fixit.dto;
+package com.example.fixit.dto.request;
 
 public class UpdatePasswordRequest {
     private int userId;

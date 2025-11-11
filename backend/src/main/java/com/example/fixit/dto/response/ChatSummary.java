@@ -1,11 +1,10 @@
-package com.example.fixit.dto;
+package com.example.fixit.dto.response;
 
 import com.example.fixit.model.Chat;
 import com.example.fixit.model.User;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class ChatSummary {
     private Integer chatId;

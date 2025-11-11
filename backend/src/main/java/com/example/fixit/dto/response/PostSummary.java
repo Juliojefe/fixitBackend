@@ -1,9 +1,8 @@
-package com.example.fixit.dto;
+package com.example.fixit.dto.response;
 
 import com.example.fixit.model.Post;
 import com.example.fixit.model.PostImage;
 import com.example.fixit.model.User;
-import jakarta.persistence.criteria.CriteriaBuilder;
 
 import java.time.Instant;
 import java.util.ArrayList;

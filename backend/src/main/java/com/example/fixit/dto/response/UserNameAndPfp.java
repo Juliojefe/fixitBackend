@@ -1,5 +1,5 @@
 //	this is a comment
-package com.example.fixit.dto;
+package com.example.fixit.dto.response;
 
 import com.example.fixit.model.User;
 

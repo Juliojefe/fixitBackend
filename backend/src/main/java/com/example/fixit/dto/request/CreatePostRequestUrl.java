@@ -1,17 +1,15 @@
-package com.example.fixit.dto;
-
-import org.springframework.web.multipart.MultipartFile;
+package com.example.fixit.dto.request;
 
 import java.time.Instant;
 import java.util.List;
 
-public class CreatePostRequestImages {
+public class CreatePostRequestUrl {
 
     private String description;
     private Instant createdAt;
-    private List<MultipartFile> images;
+    private List<String> images;
 
-    public CreatePostRequestImages(String description, Instant createdAt, List<MultipartFile> images) {
+    public CreatePostRequestUrl(String description, Instant createdAt, List<String> images) {
         this.description = description;
         this.createdAt = createdAt;
         this.images = images;
@@ -33,11 +31,11 @@ public class CreatePostRequestImages {
         this.createdAt = createdAt;
     }
 
-    public List<MultipartFile> getImages() {
+    public List<String> getImages() {
         return images;
     }
 
-    public void setImages(List<MultipartFile> images) {
+    public void setImages(List<String> images) {
         this.images = images;
     }
 }

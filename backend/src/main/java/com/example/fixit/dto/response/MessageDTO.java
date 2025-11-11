@@ -1,4 +1,4 @@
-package com.example.fixit.dto;
+package com.example.fixit.dto.response;
 
 import java.security.Timestamp;
 import java.util.List;
