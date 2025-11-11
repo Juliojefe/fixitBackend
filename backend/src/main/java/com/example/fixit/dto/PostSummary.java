@@ -91,11 +91,11 @@ public class PostSummary {
         }
     }
 
-    private Set<UserSummary> summarizeUsers(Set<User> users) {
+    private Set<UserNameAndPfp> summarizeUsers(Set<User> users) {
         try {
-            Set<UserSummary> summary = new HashSet<>();
+            Set<UserNameAndPfp> summary = new HashSet<>();
             for (User u : users) {
-                summary.add(new UserSummary(u));
+                summary.add(new UserNameAndPfp(u));
             }
             return summary;
         } catch (Exception e) {

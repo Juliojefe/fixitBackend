@@ -20,26 +20,26 @@ public class UserController {
     @Autowired
     private UserService userService;
     @GetMapping("/getAll")
-    public Page<GetUserResponse> getAllUsers(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+    public Page<GetUserProfilePrivateResponse> getAllUsers(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
         return userService.getAllUsers(PageRequest.of(page, size));
     }
 
 
     //  verbose response containing all user details (protected)
-    @GetMapping("/{id}")
-    public ResponseEntity<GetUserResponse> getuserById(@PathVariable("id") int userId) {
+    @GetMapping("/{id}/profile/private")
+    public ResponseEntity<GetUserProfilePrivateResponse> getuserById(@PathVariable("id") int userId) {
         return userService.getuserById(userId);
     }
 
+    //  response containing only name and pfp
     @GetMapping("/summary/{id}")
-    public UserSummary getuserSummaryById(@PathVariable("id") int userId) {
-        //  summary response containing only name and pfp
+    public UserNameAndPfp getuserSummaryById(@PathVariable("id") int userId) {
         return userService.getuserSummaryById(userId);
     }
 
-    @GetMapping("/{id}/profile")
-    public ResponseEntity<UserProfile> getUserProfileById(@PathVariable("id") int userId) {
-        //  public profile access
+    //  public profile access
+    @GetMapping("/{id}/profile/public")
+    public ResponseEntity<GetUserProfilePublicResponse> getUserProfileById(@PathVariable("id") int userId) {
         return userService.getUserProfileById(userId);
     }
 

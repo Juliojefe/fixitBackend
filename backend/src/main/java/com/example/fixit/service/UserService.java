@@ -31,12 +31,12 @@ public class UserService {
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     //  For admins only
-    public Page<GetUserResponse> getAllUsers(Pageable pageable) {
+    public Page<GetUserProfilePrivateResponse> getAllUsers(Pageable pageable) {
         try {
             Page<User> userPage = userRepository.findAll(pageable);
-            List<GetUserResponse> responseList = new ArrayList<>();
+            List<GetUserProfilePrivateResponse> responseList = new ArrayList<>();
             for (User u : userPage.getContent()) {
-                responseList.add(new GetUserResponse(u));
+                responseList.add(new GetUserProfilePrivateResponse(u));
             }
             return new PageImpl<>(responseList, pageable, userPage.getTotalElements());
         } catch (Exception e) {
@@ -45,12 +45,12 @@ public class UserService {
     }
 
 
-    public ResponseEntity<GetUserResponse> getuserById(int userId) {
+    public ResponseEntity<GetUserProfilePrivateResponse> getuserById(int userId) {
         try {
             Optional<User> OptUser = userRepository.findById(userId);
             if (OptUser.isPresent()) {
                 User u = OptUser.get();
-                return ResponseEntity.ok(new GetUserResponse(u));
+                return ResponseEntity.ok(new GetUserProfilePrivateResponse(u));
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }
@@ -59,25 +59,25 @@ public class UserService {
         }
     }
 
-    public UserSummary getuserSummaryById(int userId){
+    public UserNameAndPfp getuserSummaryById(int userId){
         try {
             Optional<User> OptUser = userRepository.findById(userId);
             if (OptUser.isPresent()) {
                 User u = OptUser.get();
-                return new UserSummary(u);
+                return new UserNameAndPfp(u);
             } else {
-                return new UserSummary();
+                return new UserNameAndPfp();
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    public ResponseEntity<UserProfile> getUserProfileById(int userId) {
+    public ResponseEntity<GetUserProfilePublicResponse> getUserProfileById(int userId) {
         try {
             Optional<User> u = userRepository.findById(userId);
             if (u.isPresent()) {
-                return ResponseEntity.ok(new UserProfile(u.get()));
+                return ResponseEntity.ok(new GetUserProfilePublicResponse(u.get()));
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }
@@ -99,11 +99,11 @@ public class UserService {
         }
     }
 
-    public Set<UserSummary> followSummary(Set<User> follow) {
+    public Set<UserNameAndPfp> followSummary(Set<User> follow) {
         try {
-            Set<UserSummary> summary = new HashSet<>();
+            Set<UserNameAndPfp> summary = new HashSet<>();
             for (User u : follow) {
-                summary.add(new UserSummary(u.getName(), u.getProfilePic()));
+                summary.add(new UserNameAndPfp(u.getName(), u.getProfilePic()));
             }
             return summary;
         } catch (Exception e) {
