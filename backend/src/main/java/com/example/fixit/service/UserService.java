@@ -31,7 +31,7 @@ public class UserService {
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     //  For admins only
-    public Page<GetUserProfilePrivateResponse> getAllUsers(Pageable pageable) {
+    public Page<GetUserProfilePrivateResponse> getAllUsersPrivate(Pageable pageable) {
         try {
             Page<User> userPage = userRepository.findAll(pageable);
             List<GetUserProfilePrivateResponse> responseList = new ArrayList<>();
@@ -44,8 +44,7 @@ public class UserService {
         }
     }
 
-
-    public ResponseEntity<GetUserProfilePrivateResponse> getuserById(int userId) {
+    public ResponseEntity<GetUserProfilePrivateResponse> getUserProfilePrivateById(int userId) {
         try {
             Optional<User> OptUser = userRepository.findById(userId);
             if (OptUser.isPresent()) {
@@ -59,7 +58,7 @@ public class UserService {
         }
     }
 
-    public UserNameAndPfp getuserSummaryById(int userId){
+    public UserNameAndPfp getUserNameAndPfpById(int userId){
         try {
             Optional<User> OptUser = userRepository.findById(userId);
             if (OptUser.isPresent()) {
@@ -86,18 +85,20 @@ public class UserService {
         }
     }
 
-    public ResponseEntity<List<Integer>> getAllUserIds() {
+    public ResponseEntity<Page<Integer>> getAllUserIds(Pageable pageable) {
         try {
+            Page<User> allUsers = userRepository.findAll(pageable);
             List<Integer> ids = new ArrayList<>();
-            List<User> allUsers = userRepository.findAll();
             for (User u : allUsers) {
                 ids.add(u.getUserId());
             }
-            return ResponseEntity.ok(ids);
+            Page<Integer> pageOfIds = new PageImpl<>(ids, pageable, allUsers.getTotalElements());
+            return ResponseEntity.ok(pageOfIds);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
 
     public Set<UserNameAndPfp> followSummary(Set<User> follow) {
         try {

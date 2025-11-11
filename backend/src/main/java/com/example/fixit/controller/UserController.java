@@ -19,22 +19,23 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    //  private response containing all users (pageable)
     @GetMapping("/getAll")
-    public Page<GetUserProfilePrivateResponse> getAllUsers(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
-        return userService.getAllUsers(PageRequest.of(page, size));
+    public ResponseEntity<Page<GetUserProfilePrivateResponse>> getAllUsers(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(userService.getAllUsersPrivate(PageRequest.of(page, size)));
     }
 
-
-    //  verbose response containing all user details (protected)
+    //  private verbose response containing all user details
     @GetMapping("/{id}/profile/private")
-    public ResponseEntity<GetUserProfilePrivateResponse> getuserById(@PathVariable("id") int userId) {
-        return userService.getuserById(userId);
+    public ResponseEntity<GetUserProfilePrivateResponse> getUserById(@PathVariable("id") int userId) {
+        return userService.getUserProfilePrivateById(userId);
     }
 
-    //  response containing only name and pfp
-    @GetMapping("/summary/{id}")
-    public UserNameAndPfp getuserSummaryById(@PathVariable("id") int userId) {
-        return userService.getuserSummaryById(userId);
+    //  public response containing only name and pfp
+    @GetMapping("/{id}/name-and-pfp")
+    public UserNameAndPfp getUserNameAndPfpById(@PathVariable("id") int userId) {
+        return userService.getUserNameAndPfpById(userId);
     }
 
     //  public profile access
@@ -44,8 +45,8 @@ public class UserController {
     }
 
     @GetMapping("/all-ids")
-    public ResponseEntity<List<Integer>> getAllUserIds() {
-        return userService.getAllUserIds();
+    public ResponseEntity<Page<Integer>> getAllUserIds(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+        return userService.getAllUserIds(PageRequest.of(page, size));
     }
 
     @PatchMapping("/update-name/{id}/name")
