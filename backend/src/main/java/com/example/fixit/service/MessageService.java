@@ -33,20 +33,6 @@ public class MessageService {
     @Autowired
     private MessageImageService messageImageService;
 
-//    public MessageDTO saveMessage(int chatId, String content, String email) {
-//        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
-//        Chat chat = chatRepository.findById(chatId).orElseThrow(() -> new RuntimeException("Chat not found"));
-//        if (!chat.getUsers().contains(user)) {
-//            throw new RuntimeException("User not in chat");
-//        }
-//        Message message = new Message();
-//        message.setContent(content);
-//        message.setUser(user);
-//        message.setChat(chat);
-//        Message saved = messageRepository.save(message);
-//        return mapToDTO(saved);
-//    }
-
     public MessageDTO saveMessage(int chatId, String content, String email, List<String> imageUrls) {
         User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
         Chat chat = chatRepository.findById(chatId).orElseThrow(() -> new RuntimeException("Chat not found"));

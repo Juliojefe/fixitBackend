@@ -1,6 +1,5 @@
 package com.example.fixit.service;
 
-import com.example.fixit.dto.request.ChatCreateRequest;
 import com.example.fixit.dto.response.ChatSummary;
 import com.example.fixit.model.Chat;
 import com.example.fixit.model.User;
@@ -10,10 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 
-import java.security.Principal;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
