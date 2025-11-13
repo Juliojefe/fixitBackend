@@ -22,14 +22,25 @@ public class MessageController {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;  // For broadcasting via WebSocket
 
+    /**
+     *
+     * @param chatId
+     * @param request
+     * @param principal
+     * @return http status code
+     * @Brief Usually this rout will not be used instead use ChatWebSocketController's send message and have it call
+     * saveMessage from messageService
+     */
     @PostMapping("/{chatId}")
-    public ResponseEntity<MessageDTO> sendMessage(@PathVariable int chatId, @RequestBody MessageRequest request, Principal principal) {
+    public ResponseEntity<Void> sendMessage(@PathVariable int chatId, @RequestBody MessageRequest request, Principal principal) {
         if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        MessageDTO savedMessage = messageService.saveMessage(chatId, request.getContent(), principal.getName(), request.getImageUrls());
-        messagingTemplate.convertAndSend("/topic/chat/" + chatId, savedMessage);
-        return ResponseEntity.ok(savedMessage);
+        ResponseEntity<MessageDTO> savedMessage = messageService.saveMessage(chatId, request.getContent(), principal.getName(), request.getImageUrls());
+        if (savedMessage.getStatusCode() == HttpStatus.OK && savedMessage.getBody() != null) {
+            messagingTemplate.convertAndSend("/topic/chat/" + chatId, savedMessage.getBody());
+        }
+        return ResponseEntity.status(savedMessage.getStatusCode()).build();
     }
 
     @GetMapping("/{chatId}")
@@ -41,6 +52,6 @@ public class MessageController {
         if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        return ResponseEntity.ok(messageService.getMessagesByChatId(chatId, page, size));
+        return messageService.getMessagesByChatId(chatId, page, size);
     }
 }
