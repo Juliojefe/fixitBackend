@@ -37,16 +37,16 @@ public class UserService {
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     //  For admins only
-    public Page<GetUserProfilePrivateResponse> getAllUsersPrivate(Pageable pageable) {
+    public ResponseEntity<Page<GetUserProfilePrivateResponse>> getAllUsersPrivate(Pageable pageable) {
         try {
             Page<User> userPage = userRepository.findAll(pageable);
             List<GetUserProfilePrivateResponse> responseList = new ArrayList<>();
             for (User u : userPage.getContent()) {
                 responseList.add(new GetUserProfilePrivateResponse(u));
             }
-            return new PageImpl<>(responseList, pageable, userPage.getTotalElements());
+            return ResponseEntity.ok(new PageImpl<>(responseList, pageable, userPage.getTotalElements()));
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
@@ -64,17 +64,17 @@ public class UserService {
         }
     }
 
-    public UserNameAndPfp getUserNameAndPfpById(int userId){
+    public ResponseEntity<UserNameAndPfp> getUserNameAndPfpById(int userId){
         try {
             Optional<User> OptUser = userRepository.findById(userId);
             if (OptUser.isPresent()) {
                 User u = OptUser.get();
-                return new UserNameAndPfp(u);
+                return ResponseEntity.ok(new UserNameAndPfp(u));
             } else {
-                return new UserNameAndPfp();
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
@@ -105,115 +105,106 @@ public class UserService {
         }
     }
 
-
-    public Set<UserNameAndPfp> followSummary(Set<User> follow) {
-        try {
-            Set<UserNameAndPfp> summary = new HashSet<>();
-            for (User u : follow) {
-                summary.add(new UserNameAndPfp(u.getName(), u.getProfilePic()));
-            }
-            return summary;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public boolean updateName(UpdateNameRequest request) {
+    public ResponseEntity<Boolean> updateName(UpdateNameRequest request) {
         try {
             Optional<User> user = userRepository.findById(request.getUserId());
             if (user.isPresent()) {
                 User tempUser = user.get();
                 tempUser.setName(request.getName().trim());
                 userRepository.save(tempUser);
-                return true;
+                return ResponseEntity.ok(true);
             }
-            return false;
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
         }
     }
 
-    public boolean updateEmail(UpdateEmailRequest request) {
+    public ResponseEntity<Boolean> updateEmail(UpdateEmailRequest request) {
         try {
             Optional<User> idUser = userRepository.findById(request.getUserId());
             Optional<User> emailUser = userRepository.findByEmail(request.getEmail().trim());
+            // If both exist, but belong to different users → conflict (email already in use)
             if (idUser.isPresent() && emailUser.isPresent()) {
-                User numUser = idUser.get();
-                User strUser = emailUser.get();
-                if (!Objects.equals(numUser.getUserId(), strUser.getUserId())) {
-                    return false;
+                User currentUser = idUser.get();
+                User existingUser = emailUser.get();
+                if (!Objects.equals(currentUser.getUserId(), existingUser.getUserId())) {
+                    return ResponseEntity.status(HttpStatus.CONFLICT).body(false); // 409 Conflict
                 }
-                return false;
             }
-            if (idUser.isPresent()) {
-                User tempUser = idUser.get();
-                tempUser.setEmail(request.getEmail());
-                userRepository.save(tempUser);
-                return true;
+            // If user not found by ID → 404
+            if (idUser.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
             }
-            return false;
+            // Update email
+            User userToUpdate = idUser.get();
+            userToUpdate.setEmail(request.getEmail().trim());
+            userRepository.save(userToUpdate);
+            return ResponseEntity.ok(true);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
         }
     }
 
-    public boolean updatePassword(UpdatePasswordRequest request) {
+    public ResponseEntity<Boolean> updatePassword(UpdatePasswordRequest request) {
         try {
             Optional<User> user = userRepository.findById(request.getUserId());
-            if (user.isPresent()) {
-                User tempUser = user.get();
-                if (tempUser.getPassword() == null && tempUser.getGoogleId() != null) {
-                    return false;
-                }
-                String oldPassword = request.getOldPassword().trim();
-                String storedHashedPassword = tempUser.getPassword().trim();
-                String newPassword = request.getNewPassword().trim();
-                if (passwordEncoder.matches(oldPassword, storedHashedPassword)) {
-                    if (!isValidPassword(newPassword)) {
-                        return false;
-                    }
-                    tempUser.setPassword(passwordEncoder.encode(newPassword).trim());
-                    userRepository.save(tempUser);
-                    return true;
-                }
+            if (user.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
             }
-            return false;
+            User tempUser = user.get();
+            // Prevent password updates for Google-linked accounts
+            if (tempUser.getPassword() == null && tempUser.getGoogleId() != null) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(false);
+            }
+            String oldPassword = request.getOldPassword().trim();
+            String storedHashedPassword = tempUser.getPassword().trim();
+            String newPassword = request.getNewPassword().trim();
+            if (!passwordEncoder.matches(oldPassword, storedHashedPassword)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(false);
+            }
+            if (!isValidPassword(newPassword)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
+            }
+            tempUser.setPassword(passwordEncoder.encode(newPassword).trim());
+            userRepository.save(tempUser);
+            return ResponseEntity.ok(true);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
         }
     }
 
-    public boolean makeAdmin(int requestUserId) {
+    public ResponseEntity<Boolean> makeAdmin(int requestUserId) {
         try {
             Optional<User> user = userRepository.findById(requestUserId);
             if (user.isPresent()) {
                 User tempUser = user.get();
                 tempUser.getUserRoles().setIsAdmin(true);
                 userRepository.save(tempUser);
-                return true;
+                return ResponseEntity.ok(true);
             }
-            return false;
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
         }
     }
 
-    public boolean makeMechanic(int requestUserId) {
+    public ResponseEntity<Boolean> makeMechanic(int requestUserId) {
         try {
             Optional<User> user = userRepository.findById(requestUserId);
             if (user.isPresent()) {
                 User tempUser = user.get();
                 tempUser.getUserRoles().setIsMechanic(true);
                 userRepository.save(tempUser);
-                return true;
+                return ResponseEntity.ok(true);
             }
-            return false;
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
         }
     }
 
-    public boolean makeRegularUser(int requestUserId) {
+    public ResponseEntity<Boolean> makeRegularUser(int requestUserId) {
         try {
             Optional<User> user = userRepository.findById(requestUserId);
             if (user.isPresent()) {
@@ -221,40 +212,40 @@ public class UserService {
                 tempUser.getUserRoles().setIsMechanic(false);
                 tempUser.getUserRoles().setIsAdmin(false);
                 userRepository.save(tempUser);
-                return true;
+                return ResponseEntity.ok(true);
             }
-            return false;
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
         }
     }
 
-    public boolean updateProfilePic(UpdateProfilePicRequest request) {
+    public ResponseEntity<Boolean> updateProfilePic(UpdateProfilePicRequest request) {
         try {
             Optional<User> user = userRepository.findById(request.getUserId());
             if (user.isPresent()) {
                 User tempUser = user.get();
                 tempUser.setProfilePic(request.getPictureUrl());
                 userRepository.save(tempUser);
-                return true;
+                return ResponseEntity.ok(true);
             }
-            return false;
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
         }
     }
 
-    public boolean deleteUser(int requestUserId) {
+    public ResponseEntity<Boolean> deleteUser(int requestUserId) {
         try {
             Optional<User> user = userRepository.findById(requestUserId);
             if (user.isPresent()) {
                 User tempUser = user.get();
                 userRepository.delete(tempUser);
-                return true;
+                return ResponseEntity.ok(true);
             }
-            return false;
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
         }
     }
 

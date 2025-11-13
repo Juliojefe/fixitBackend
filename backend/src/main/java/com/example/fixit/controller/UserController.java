@@ -24,7 +24,7 @@ public class UserController {
     //  private response containing all users (pageable)
     @GetMapping("/getAll")
     public ResponseEntity<Page<GetUserProfilePrivateResponse>> getAllUsers(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(userService.getAllUsersPrivate(PageRequest.of(page, size)));
+        return userService.getAllUsersPrivate(PageRequest.of(page, size));
     }
 
     //  private verbose response containing all user details
@@ -35,7 +35,7 @@ public class UserController {
 
     //  public response containing only name and pfp
     @GetMapping("/{id}/name-and-pfp")
-    public UserNameAndPfp getUserNameAndPfpById(@PathVariable("id") int userId) {
+    public ResponseEntity<UserNameAndPfp> getUserNameAndPfpById(@PathVariable("id") int userId) {
         return userService.getUserNameAndPfpById(userId);
     }
 
@@ -51,42 +51,42 @@ public class UserController {
     }
 
     @PatchMapping("/update-name/{id}/name")
-    public boolean updateUserName(@RequestBody UpdateNameRequest request) {
+    public ResponseEntity<Boolean> updateUserName(@RequestBody UpdateNameRequest request) {
         return userService.updateName(request);
     }
 
     @PatchMapping("/update-email/{id}/email")
-    public boolean updateEmail(@RequestBody UpdateEmailRequest request) {
+    public ResponseEntity<Boolean> updateEmail(@RequestBody UpdateEmailRequest request) {
         return userService.updateEmail(request);
     }
 
     @PatchMapping("/update-password/{id}/password")
-    public boolean updatePassword(@RequestBody UpdatePasswordRequest request) {
+    public ResponseEntity<Boolean> updatePassword(@RequestBody UpdatePasswordRequest request) {
         return userService.updatePassword(request);
     }
 
     @PatchMapping("/make-admin/{id}")
-    public boolean makeAdmin(@RequestBody int requestUserId) {
+    public ResponseEntity<Boolean> makeAdmin(@RequestBody int requestUserId) {
         return userService.makeAdmin(requestUserId);
     }
 
     @PatchMapping("/make-mechanic/{id}")
-    public boolean makeMechanic(@RequestBody int requestUserId) {
+    public ResponseEntity<Boolean> makeMechanic(@RequestBody int requestUserId) {
         return userService.makeMechanic(requestUserId);
     }
 
     @PatchMapping("/make-regular-user/{id}")
-    public boolean makeRegularUser(@RequestBody int requestUserId) {
+    public ResponseEntity<Boolean> makeRegularUser(@RequestBody int requestUserId) {
         return userService.makeRegularUser(requestUserId);
     }
 
     @PatchMapping("/update-profile-pic/{id}/url-new-pic")
-    public boolean updateProfilePic(@RequestBody UpdateProfilePicRequest request) {
+    public ResponseEntity<Boolean> updateProfilePic(@RequestBody UpdateProfilePicRequest request) {
         return userService.updateProfilePic(request);
     }
 
     @DeleteMapping("/delete-user/{id}")
-    public boolean deleteUser(@RequestBody int requestUserId) {
+    public ResponseEntity<Boolean> deleteUser(@RequestBody int requestUserId) {
         return userService.deleteUser(requestUserId);
     }
 }
