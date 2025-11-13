@@ -1,14 +1,11 @@
 package com.example.fixit.controller;
 
-import com.example.fixit.component.JwtTokenProvider;
 import com.example.fixit.dto.request.GoogleUserRegisterRequest;
 import com.example.fixit.dto.request.RefreshRequest;
 import com.example.fixit.dto.request.UserLoginRequest;
 import com.example.fixit.dto.request.UserRegisterRequest;
 import com.example.fixit.dto.response.AuthResponse;
 import com.example.fixit.dto.response.RefreshResponse;
-import com.example.fixit.repository.RefreshTokenRepository;
-import com.example.fixit.repository.UserRepository;
 import com.example.fixit.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
