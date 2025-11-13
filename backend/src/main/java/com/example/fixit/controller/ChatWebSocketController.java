@@ -35,7 +35,7 @@ public class ChatWebSocketController {
         ResponseEntity<MessageDTO> savedMessage = messageService.saveMessage(chatId, request.getContent(), principal.getName(), request.getImageUrls());
         if (savedMessage.getStatusCode() == HttpStatus.OK && savedMessage.getBody() != null) {
             messagingTemplate.convertAndSend("/topic/chat/" + chatId, savedMessage.getBody());
-        } else { // send back an error
+        } else { // send back an error message
             messagingTemplate.convertAndSendToUser(principal.getName(), "/queue/errors", "Failed to send message: " + savedMessage.getStatusCode());
         }
     }

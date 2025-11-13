@@ -23,14 +23,18 @@ public class MessageController {
     private SimpMessagingTemplate messagingTemplate;  // For broadcasting via WebSocket
 
     /**
+     * Handles sending a message to a specific chat via HTTP.
+     * <p>
+     * This route is primarily for fallback or testing purposes. In most cases,
+     * messages should be sent through ChatWebSocketController's sendMessage
+     * which uses WebSocket communication and internally calls messageService.saveMessage().
      *
-     * @param chatId
-     * @param request
-     * @param principal
-     * @return http status code
-     * @Brief Usually this rout will not be used instead use ChatWebSocketController's send message and have it call
-     * saveMessage from messageService
+     * @param chatId    the ID of the chat to send the message to
+     * @param request   the message content and optional image URLs
+     * @param principal the authenticated user sending the message
+     * @return          an HTTP status code representing the result of the operation
      */
+
     @PostMapping("/{chatId}")
     public ResponseEntity<Void> sendMessage(@PathVariable int chatId, @RequestBody MessageRequest request, Principal principal) {
         if (principal == null) {

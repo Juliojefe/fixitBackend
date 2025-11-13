@@ -26,7 +26,7 @@ public class ChatController {
     private UserRepository userRepository;
 
     @GetMapping("/{id}")
-    public ResponseEntity<ChatSummary> getChatById(@PathVariable("id") int chatId, Principal principal) {
+    public ResponseEntity<ChatSummary> getChatSummaryById(@PathVariable("id") int chatId, Principal principal) {
         if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ChatSummary());
         }
