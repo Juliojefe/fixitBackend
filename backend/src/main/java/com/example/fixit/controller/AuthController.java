@@ -18,8 +18,6 @@ public class AuthController {
     @Autowired
     private AuthService authService;
 
-    // Note: Removed unused autowired fields (JwtTokenProvider, UserRepository, RefreshTokenRepository) as they are now handled in the service
-
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@RequestBody UserRegisterRequest request) {
         return authService.register(request);
