@@ -1,13 +1,18 @@
 package com.example.fixit.service;
 
+import com.example.fixit.dto.request.ChatCreateRequest;
 import com.example.fixit.dto.response.ChatSummary;
 import com.example.fixit.model.Chat;
 import com.example.fixit.model.User;
 import com.example.fixit.repository.ChatRepository;
 import com.example.fixit.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -22,47 +27,47 @@ public class ChatService {
     @Autowired
     private UserRepository userRepository;
 
-    public ChatSummary getChatSummaryById(int chatId) {
+    public ResponseEntity<ChatSummary> getChatSummaryById(int chatId, User user) {
         try {
-            Optional<Chat> optChat = chatRepository.findById(chatId);
-            if (optChat.isPresent()) {
-                return new ChatSummary(optChat.get());
-            } else {
-                return new ChatSummary();  // Or throw NotFoundException
+            Chat chat = chatRepository.findById(chatId).orElse(null);
+            if (chat == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ChatSummary());
             }
+            if (!chat.getUsers().contains(user)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+            return ResponseEntity.ok(new ChatSummary(chat));
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    public Set<ChatSummary> getAllChats() {
+    public ResponseEntity<ChatSummary> createChat(String name, User currentUser, Set<Integer> userIds) {
         try {
-            List<Chat> chats = chatRepository.findAll();
-            return chats.stream()
+            Chat chat = new Chat();
+            chat.setName(name);
+            chat.getUsers().add(currentUser);
+
+            for (Integer id : userIds) {
+                Optional<User> userOptional = userRepository.findById(id);
+                userOptional.ifPresent(chat.getUsers()::add);
+            }
+
+            chatRepository.save(chat);
+            return ResponseEntity.ok(new ChatSummary(chat));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    public ResponseEntity<Set<ChatSummary>> getChatsForUser(User user) {
+        try {
+            Set<ChatSummary> chatSummaries = user.getChats().stream()
                     .map(ChatSummary::new)
                     .collect(Collectors.toSet());
+            return ResponseEntity.ok(chatSummaries);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-    }
-
-    public Chat createChat(String name, User creator, Set<Integer> userIds) {
-        Chat chat = new Chat();
-        chat.setName(name);
-        chat.getUsers().add(creator);
-        for (Integer id : userIds) {
-            Optional<User> userOptional = userRepository.findById(id);
-            if (userOptional.isPresent()) {
-                chat.getUsers().add(userOptional.get());
-            }
-        }
-        return chatRepository.save(chat);
-    }
-
-    public Set<ChatSummary> getChatsForUser(String email) {
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
-        return user.getChats().stream()
-                .map(ChatSummary::new)
-                .collect(Collectors.toSet());
     }
 }

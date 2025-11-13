@@ -26,7 +26,7 @@ public class FollowService {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MutualFollowResponse());
             }
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
@@ -50,7 +50,7 @@ public class FollowService {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);   //  false: one or both don't exist
             }
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
@@ -74,7 +74,7 @@ public class FollowService {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);   //  false: one or both don't exist
             }
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
@@ -98,7 +98,7 @@ public class FollowService {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);   //  false: one or both don't exist
             }
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 

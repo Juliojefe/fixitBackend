@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.Optional;
 import java.util.Set;
 
 @RestController
@@ -27,10 +28,14 @@ public class ChatController {
     @GetMapping("/{id}")
     public ResponseEntity<ChatSummary> getChatById(@PathVariable("id") int chatId, Principal principal) {
         if (principal == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ChatSummary());
         }
-        // Optional: Check if user is in the chat
-        return ResponseEntity.ok(chatService.getChatSummaryById(chatId));
+        Optional<User> optUser = userRepository.findByEmail(principal.getName());
+        if (!optUser.isPresent()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ChatSummary());
+        }
+        User currentUser = optUser.get();
+        return chatService.getChatSummaryById(chatId, currentUser);
     }
 
     @PostMapping("/create")
@@ -38,9 +43,12 @@ public class ChatController {
         if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        User currentUser = userRepository.findByEmail(principal.getName()).orElseThrow(() -> new RuntimeException("User not found"));
-        Chat newChat = chatService.createChat(request.getName(), currentUser, request.getUserIds());
-        return ResponseEntity.ok(new ChatSummary(newChat));
+        Optional<User> optUser = userRepository.findByEmail(principal.getName());
+        if (!optUser.isPresent()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ChatSummary());
+        }
+        User currentUser = optUser.get();
+        return chatService.createChat(request.getName(), currentUser, request.getUserIds());
     }
 
     @GetMapping("/user")
@@ -48,6 +56,11 @@ public class ChatController {
         if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        return ResponseEntity.ok(chatService.getChatsForUser(principal.getName()));
+        Optional<User> optUser = userRepository.findByEmail(principal.getName());
+        if (!optUser.isPresent()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        User currentUser = optUser.get();
+        return chatService.getChatsForUser(currentUser);
     }
 }
