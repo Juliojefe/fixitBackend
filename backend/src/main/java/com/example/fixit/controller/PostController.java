@@ -3,21 +3,21 @@ package com.example.fixit.controller;
 import com.example.fixit.dto.request.CreatePostRequestImages;
 import com.example.fixit.dto.request.CreatePostRequestUrl;
 import com.example.fixit.dto.response.PostSummary;
+import com.example.fixit.exception.UnauthorizedException;
 import com.example.fixit.model.User;
 import com.example.fixit.repository.UserRepository;
 import com.example.fixit.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.security.Principal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 @RestController
@@ -32,86 +32,69 @@ public class PostController {
 
     @GetMapping("/{id}")
     public ResponseEntity<PostSummary> getPostById(@PathVariable("id") int postId) {
-        return postService.getPostSummaryById(postId);
+        return ResponseEntity.ok(postService.getPostSummaryById(postId));
     }
 
     @GetMapping("/all-ids")
     public ResponseEntity<Set<Integer>> getAllPostIds() {
-        return postService.getAllPostIds();
+        return ResponseEntity.ok(postService.getAllPostIds());
     }
 
     @GetMapping("/following")
     public ResponseEntity<List<Integer>> getFollowingPostIds(Principal principal) {
-	    //	postIds of post created by those who a user follows sorted
-        Optional<User> userOpt = getUserFromPrincipal(principal);
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-        }
-        return postService.getFollowingPostIds(userOpt.get());
+        // postIds of post created by those who a user follows sorted
+        User user = getUserFromPrincipalOrThrow(principal);
+        return ResponseEntity.ok(postService.getFollowingPostIds(user));
     }
 
     @GetMapping("/owned/{userId}")
     public ResponseEntity<Set<Integer>> getOwnedPostByUserId(@PathVariable("userId") int userId) {
-        return postService.getOwnedPostByUserId(userId);
+        return ResponseEntity.ok(postService.getOwnedPostByUserId(userId));
     }
 
     @GetMapping("/liked/{userId}")
     public ResponseEntity<Set<Integer>> getLikedPostByUserId(@PathVariable("userId") int userId) {
-        return postService.getLikedPostByUserId(userId);
+        return ResponseEntity.ok(postService.getLikedPostByUserId(userId));
     }
 
     @GetMapping("/saved")
     public ResponseEntity<Set<Integer>> getSavedPostByUserId(Principal principal) {
-        Optional<User> userOpt = getUserFromPrincipal(principal);
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-        }
-        return postService.getSavedPostsByUserId(userOpt.get().getUserId());
+        User user = getUserFromPrincipalOrThrow(principal);
+        return ResponseEntity.ok(postService.getSavedPostsByUserId(user.getUserId()));
     }
 
     @PostMapping("/{postId}/like")
     public ResponseEntity<Boolean> likePost(@PathVariable int postId, Principal principal) {
-        Optional<User> userOpt = getUserFromPrincipal(principal);
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(false);
-        }
-        return postService.likePost(postId, userOpt.get().getUserId());
+        User user = getUserFromPrincipalOrThrow(principal);
+        postService.likePost(postId, user.getUserId());
+        return ResponseEntity.ok(true);
     }
 
     @DeleteMapping("/{postId}/like")
     public ResponseEntity<Boolean> unlikePost(@PathVariable int postId, Principal principal) {
-        Optional<User> userOpt = getUserFromPrincipal(principal);
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(false);
-        }
-        return postService.unlikePost(postId, userOpt.get().getUserId());
+        User user = getUserFromPrincipalOrThrow(principal);
+        postService.unlikePost(postId, user.getUserId());
+        return ResponseEntity.ok(true);
     }
 
     @PostMapping("/{postId}/save")
     public ResponseEntity<Boolean> savePost(@PathVariable int postId, Principal principal) {
-        Optional<User> userOpt = getUserFromPrincipal(principal);
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(false);
-        }
-        return postService.savePost(postId, userOpt.get().getUserId());
+        User user = getUserFromPrincipalOrThrow(principal);
+        postService.savePost(postId, user.getUserId());
+        return ResponseEntity.ok(true);
     }
 
     @DeleteMapping("/{postId}/save")
     public ResponseEntity<Boolean> unSavePost(@PathVariable int postId, Principal principal) {
-        Optional<User> userOpt = getUserFromPrincipal(principal);
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(false);
-        }
-        return postService.unSavePost(postId, userOpt.get().getUserId());
+        User user = getUserFromPrincipalOrThrow(principal);
+        postService.unSavePost(postId, user.getUserId());
+        return ResponseEntity.ok(true);
     }
 
     @PostMapping("/create/urls")
     public ResponseEntity<PostSummary> createPost(@RequestBody CreatePostRequestUrl request, Principal principal) {
-        Optional<User> userOpt = getUserFromPrincipal(principal);
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        return postService.createPost(request, userOpt.get().getUserId());
+        User user = getUserFromPrincipalOrThrow(principal);
+        return ResponseEntity.ok(postService.createPost(request, user.getUserId()));
     }
 
     @PostMapping(value = "/create/images", consumes = { "multipart/form-data" })
@@ -120,15 +103,12 @@ public class PostController {
             @RequestParam("createdAt") String createdAt,
             @RequestParam(value = "requestImages", required = false) List<MultipartFile> images,
             Principal principal
-    ) {
+    ) throws IOException {
         List<MultipartFile> imageList = images != null ? images : new ArrayList<>();    //  empty?
 
         CreatePostRequestImages request = new CreatePostRequestImages(description, Instant.parse(createdAt), imageList);
-        Optional<User> userOpt = getUserFromPrincipal(principal);
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        return postService.createPost(request, userOpt.get().getUserId());
+        User user = getUserFromPrincipalOrThrow(principal);
+        return ResponseEntity.ok(postService.createPost(request, user.getUserId()));
     }
 
     //  Helper method to safely extract the user ID from the Authentication object.
@@ -143,11 +123,12 @@ public class PostController {
         throw new IllegalArgumentException("Cannot determine user ID from authentication token.");
     }
 
-    private Optional<User> getUserFromPrincipal(Principal principal) {
+    private User getUserFromPrincipalOrThrow(Principal principal) {
         if (principal == null) {
-            return Optional.empty();
+            throw new UnauthorizedException("User not authenticated");
         }
-        return userRepository.findByEmail(principal.getName());
+        return userRepository.findByEmail(principal.getName())
+                .orElseThrow(() -> new UnauthorizedException("User not found"));
     }
 
 }
