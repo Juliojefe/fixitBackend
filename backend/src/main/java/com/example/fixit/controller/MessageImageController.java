@@ -1,6 +1,7 @@
 package com.example.fixit.controller;
 
 import com.example.fixit.dto.request.ImageRequest;
+import com.example.fixit.exception.UnauthorizedException;
 import com.example.fixit.model.MessageImage;
 import com.example.fixit.service.MessageImageService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,19 +21,20 @@ public class MessageImageController {
 
     @PostMapping("/{messageId}")
     public ResponseEntity<MessageImage> addImageToMessage(@PathVariable int messageId, @RequestBody ImageRequest request, Principal principal) {
-        if (principal == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        // Optional: Verify user owns the message
+        principalCheck(principal);
         MessageImage image = messageImageService.addImage(messageId, request.getImageUrl());
         return ResponseEntity.ok(image);
     }
 
     @GetMapping("/{messageId}")
     public ResponseEntity<List<MessageImage>> getImagesByMessage(@PathVariable int messageId, Principal principal) {
-        if (principal == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+        principalCheck(principal);
         return ResponseEntity.ok(messageImageService.getImagesByMessageId(messageId));
+    }
+
+    private void principalCheck(Principal principal) {
+        if (principal == null) {
+            throw new UnauthorizedException("User not authenticated");
+        }
     }
 }
