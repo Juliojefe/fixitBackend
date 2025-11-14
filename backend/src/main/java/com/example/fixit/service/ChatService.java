@@ -1,6 +1,7 @@
 package com.example.fixit.service;
 
 import com.example.fixit.dto.response.ChatSummary;
+import com.example.fixit.exception.ResourceNotFoundException;
 import com.example.fixit.model.Chat;
 import com.example.fixit.model.User;
 import com.example.fixit.repository.ChatRepository;
@@ -8,7 +9,6 @@ import com.example.fixit.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -22,47 +22,27 @@ public class ChatService {
     @Autowired
     private UserRepository userRepository;
 
-    public ChatSummary getChatSummaryById(int chatId) {
-        try {
-            Optional<Chat> optChat = chatRepository.findById(chatId);
-            if (optChat.isPresent()) {
-                return new ChatSummary(optChat.get());
-            } else {
-                return new ChatSummary();  // Or throw NotFoundException
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+    public ChatSummary getChatSummaryById(int chatId, User user) {
+        Chat chat = chatRepository.findById(chatId).orElseThrow(() -> new ResourceNotFoundException("The chat you are looking for was not found"));
+        if (!chat.getUsers().contains(user)) {
+            throw new ResourceNotFoundException("That user in not a member of the chat");
         }
+        return new ChatSummary(chat);
     }
 
-    public Set<ChatSummary> getAllChats() {
-        try {
-            List<Chat> chats = chatRepository.findAll();
-            return chats.stream()
-                    .map(ChatSummary::new)
-                    .collect(Collectors.toSet());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public Chat createChat(String name, User creator, Set<Integer> userIds) {
+    public ChatSummary createChat(String name, User currentUser, Set<Integer> userIds) {
         Chat chat = new Chat();
         chat.setName(name);
-        chat.getUsers().add(creator);
+        chat.getUsers().add(currentUser);
         for (Integer id : userIds) {
             Optional<User> userOptional = userRepository.findById(id);
-            if (userOptional.isPresent()) {
-                chat.getUsers().add(userOptional.get());
-            }
+            userOptional.ifPresent(chat.getUsers()::add);
         }
-        return chatRepository.save(chat);
+        chatRepository.save(chat);
+        return new ChatSummary(chat);
     }
 
-    public Set<ChatSummary> getChatsForUser(String email) {
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
-        return user.getChats().stream()
-                .map(ChatSummary::new)
-                .collect(Collectors.toSet());
+    public Set<ChatSummary> getChatsForUser(User user) {
+        return user.getChats().stream().map(ChatSummary::new).collect(Collectors.toSet());
     }
 }

@@ -30,63 +30,71 @@ public class UserController {
     //  private verbose response containing all user details
     @GetMapping("/{id}/profile/private")
     public ResponseEntity<GetUserProfilePrivateResponse> getUserById(@PathVariable("id") int userId) {
-        return userService.getUserProfilePrivateById(userId);
+        return ResponseEntity.ok(userService.getUserProfilePrivateById(userId));
     }
 
     //  public response containing only name and pfp
     @GetMapping("/{id}/name-and-pfp")
-    public UserNameAndPfp getUserNameAndPfpById(@PathVariable("id") int userId) {
-        return userService.getUserNameAndPfpById(userId);
+    public ResponseEntity<UserNameAndPfp> getUserNameAndPfpById(@PathVariable("id") int userId) {
+        return ResponseEntity.ok(userService.getUserNameAndPfpById(userId));
     }
 
     //  public profile access
     @GetMapping("/{id}/profile/public")
     public ResponseEntity<GetUserProfilePublicResponse> getUserProfileById(@PathVariable("id") int userId) {
-        return userService.getUserProfileById(userId);
+        return ResponseEntity.ok(userService.getUserProfileById(userId));
     }
 
     @GetMapping("/all-ids")
     public ResponseEntity<Page<Integer>> getAllUserIds(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
-        return userService.getAllUserIds(PageRequest.of(page, size));
+        return ResponseEntity.ok(userService.getAllUserIds(PageRequest.of(page, size)));
     }
 
     @PatchMapping("/update-name/{id}/name")
-    public boolean updateUserName(@RequestBody UpdateNameRequest request) {
-        return userService.updateName(request);
+    public ResponseEntity<Boolean> updateUserName(@RequestBody UpdateNameRequest request) {
+        userService.updateName(request);
+        return ResponseEntity.ok(true);
     }
 
     @PatchMapping("/update-email/{id}/email")
-    public boolean updateEmail(@RequestBody UpdateEmailRequest request) {
-        return userService.updateEmail(request);
+    public ResponseEntity<Boolean> updateEmail(@RequestBody UpdateEmailRequest request) {
+        userService.updateEmail(request);
+        return ResponseEntity.ok(true);
     }
 
     @PatchMapping("/update-password/{id}/password")
-    public boolean updatePassword(@RequestBody UpdatePasswordRequest request) {
-        return userService.updatePassword(request);
+    public ResponseEntity<Boolean> updatePassword(@RequestBody UpdatePasswordRequest request) {
+        userService.updatePassword(request);
+        return ResponseEntity.ok(true);
     }
 
     @PatchMapping("/make-admin/{id}")
-    public boolean makeAdmin(@RequestBody int requestUserId) {
-        return userService.makeAdmin(requestUserId);
+    public ResponseEntity<Boolean> makeAdmin(@RequestBody int requestUserId) {
+        userService.makeAdmin(requestUserId);
+        return ResponseEntity.ok(true);
     }
 
     @PatchMapping("/make-mechanic/{id}")
-    public boolean makeMechanic(@RequestBody int requestUserId) {
-        return userService.makeMechanic(requestUserId);
+    public ResponseEntity<Boolean> makeMechanic(@RequestBody int requestUserId) {
+        userService.makeMechanic(requestUserId);
+        return ResponseEntity.ok(true);
     }
 
     @PatchMapping("/make-regular-user/{id}")
-    public boolean makeRegularUser(@RequestBody int requestUserId) {
-        return userService.makeRegularUser(requestUserId);
+    public ResponseEntity<Boolean> makeRegularUser(@RequestBody int requestUserId) {
+        userService.makeRegularUser(requestUserId);
+        return ResponseEntity.ok(true);
     }
 
     @PatchMapping("/update-profile-pic/{id}/url-new-pic")
-    public boolean updateProfilePic(@RequestBody UpdateProfilePicRequest request) {
-        return userService.updateProfilePic(request);
+    public ResponseEntity<Boolean> updateProfilePic(@RequestBody UpdateProfilePicRequest request) {
+        userService.updateProfilePic(request);
+        return ResponseEntity.ok(true);
     }
 
     @DeleteMapping("/delete-user/{id}")
-    public boolean deleteUser(@RequestBody int requestUserId) {
-        return userService.deleteUser(requestUserId);
+    public ResponseEntity<Boolean> deleteUser(@RequestBody int requestUserId) {
+        userService.deleteUser(requestUserId);
+        return ResponseEntity.ok(true);
     }
 }

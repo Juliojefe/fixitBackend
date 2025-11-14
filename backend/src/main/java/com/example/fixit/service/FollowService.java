@@ -1,14 +1,12 @@
 package com.example.fixit.service;
+
 import com.example.fixit.dto.response.MutualFollowResponse;
+import com.example.fixit.exception.BadRequestException;
+import com.example.fixit.exception.ResourceNotFoundException;
 import com.example.fixit.model.User;
 import com.example.fixit.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
-
 
 @Service
 public class FollowService {
@@ -16,90 +14,51 @@ public class FollowService {
     @Autowired
     private UserRepository userRepository;
 
-    public ResponseEntity<MutualFollowResponse> checkMutualFollow(int userAId, int userBId) {
-        try {
-            Optional<User> optUserA = userRepository.findById(userAId);
-            Optional<User> optUserB = userRepository.findById(userBId);
-            if (optUserA.isPresent() && optUserB.isPresent()) {
-                return ResponseEntity.ok(new MutualFollowResponse(optUserA.get(), optUserB.get()));
-            } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MutualFollowResponse());
-            }
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
+    public MutualFollowResponse checkMutualFollow(int userAId, int userBId) {
+        User userA = findUserById(userAId);
+        User userB = findUserById(userBId);
+        return new MutualFollowResponse(userA, userB);
     }
 
-    public ResponseEntity<Boolean> unfollow(int activeUserId, int unfollowUserId) {
-        try {
-            Optional<User> optActive = userRepository.findById(activeUserId);
-            Optional<User> optionalUnfollow = userRepository.findById(unfollowUserId);
-            if (optActive.isPresent() && optionalUnfollow.isPresent()) {
-                User active = optActive.get();
-                User unfollow = optionalUnfollow.get();
-                if (active.getFollowing().contains(unfollow)) {
-                    active.getFollowing().remove(unfollow);
-                    unfollow.getFollowers().remove(active);
-                    userRepository.save(active);
-                    userRepository.save(unfollow);
-                    return ResponseEntity.ok(true);    //  true: both exist, and active followed the other
-                } else {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);   //  false: never followed
-                }
-            } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);   //  false: one or both don't exist
-            }
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+    public void unfollow(int activeUserId, int unfollowUserId) {
+        User active = findUserById(activeUserId);
+        User unfollow = findUserById(unfollowUserId);
+        if (!active.getFollowing().contains(unfollow)) {
+            throw new BadRequestException("You are not following this user");
         }
+        active.getFollowing().remove(unfollow);
+        unfollow.getFollowers().remove(active);
+        userRepository.save(active);
+        userRepository.save(unfollow);
     }
 
-    public ResponseEntity<Boolean> follow(int activeUserId, int followUserId) {
-        try {
-            Optional<User> optActive = userRepository.findById(activeUserId);
-            Optional<User> optionalFollow = userRepository.findById(followUserId);
-            if (optActive.isPresent() && optionalFollow.isPresent()) {
-                User active = optActive.get();
-                User follow = optionalFollow.get();
-                if (!active.getFollowing().contains(follow)) {
-                    active.getFollowing().add(follow);
-                    follow.getFollowers().add(active);
-                    userRepository.save(active);
-                    userRepository.save(follow);
-                    return ResponseEntity.ok(true);    //  true: both exist, active don't follow the other
-                } else {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);   //  false: active already follows
-                }
-            } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);   //  false: one or both don't exist
-            }
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+    public void follow(int activeUserId, int followUserId) {
+        User active = findUserById(activeUserId);
+        User follow = findUserById(followUserId);
+        if (active.getFollowing().contains(follow)) {
+            throw new BadRequestException("You already follow this user");
         }
+        active.getFollowing().add(follow);
+        follow.getFollowers().add(active);
+        userRepository.save(active);
+        userRepository.save(follow);
     }
 
-    public ResponseEntity<Boolean> removeFollower(int activeUserId, int removeFollowerId) {
-        try {
-            Optional<User> optActive = userRepository.findById(activeUserId);
-            Optional<User> optionalRemoveFollow = userRepository.findById(removeFollowerId);
-            if (optActive.isPresent() && optionalRemoveFollow.isPresent()) {
-                User active = optActive.get();
-                User removeFollow = optionalRemoveFollow.get();
-                if (active.getFollowers().contains(removeFollow)) {
-                    active.getFollowers().remove(removeFollow);
-                    removeFollow.getFollowing().remove(active);
-                    userRepository.save(active);
-                    userRepository.save(removeFollow);
-                    return ResponseEntity.ok(true);    //  true: both exist, active is followed by the other
-                } else {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);   //  false: active is not followed by the other
-                }
-            } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);   //  false: one or both don't exist
-            }
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+    public void removeFollower(int activeUserId, int removeFollowerId) {
+        User active = findUserById(activeUserId);
+        User removeFollow = findUserById(removeFollowerId);
+        if (!active.getFollowers().contains(removeFollow)) {
+            throw new BadRequestException("This user is not following you");
         }
+        active.getFollowers().remove(removeFollow);
+        removeFollow.getFollowing().remove(active);
+        userRepository.save(active);
+        userRepository.save(removeFollow);
     }
 
+    // Helper — reuse & throw proper 404
+    private User findUserById(int userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+    }
 }

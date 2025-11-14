@@ -1,6 +1,8 @@
 package com.example.fixit.controller;
 
 import com.example.fixit.dto.response.MutualFollowResponse;
+import com.example.fixit.exception.ResourceNotFoundException;
+import com.example.fixit.exception.UnauthorizedException;
 import com.example.fixit.model.User;
 import com.example.fixit.repository.UserRepository;
 import com.example.fixit.service.FollowService;
@@ -22,46 +24,37 @@ public class FollowController {
     @Autowired
     private UserRepository userRepository;
 
+    private User getCurrentUser(Principal principal) {
+        if (principal == null) {
+            throw new UnauthorizedException("User not authenticated");
+        }
+        return userRepository.findByEmail(principal.getName()).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+    }
+
     @GetMapping("/mutual/{userBId}")
     public ResponseEntity<MutualFollowResponse> checkMutualFollow(@PathVariable int userBId, Principal principal) {
-        Optional<User> userOpt = getUserFromPrincipal(principal);
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new MutualFollowResponse());
-        }
-        return followService.checkMutualFollow(userOpt.get().getUserId(), userBId);
+        User user = getCurrentUser(principal);
+        return ResponseEntity.ok(followService.checkMutualFollow(user.getUserId(), userBId));
     }
 
     @DeleteMapping("/{unfollowUserId}")
-    public ResponseEntity<Boolean> unfollow(@PathVariable int unfollowUserId, Principal principal) {
-        Optional<User> userOpt = getUserFromPrincipal(principal);
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(false);
-        }
-        return followService.unfollow(userOpt.get().getUserId(), unfollowUserId);
+    public ResponseEntity<Void> unfollow(@PathVariable int unfollowUserId, Principal principal) {
+        User user = getCurrentUser(principal);
+        followService.unfollow(user.getUserId(), unfollowUserId);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/{followUserId}")
     public ResponseEntity<Boolean> follow(@PathVariable int followUserId, Principal principal) {
-        Optional<User> userOpt = getUserFromPrincipal(principal);
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(false);
-        }
-        return followService.follow(userOpt.get().getUserId(), followUserId);
+        User user = getCurrentUser(principal);
+        followService.follow(user.getUserId(), followUserId);
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/remove-follower/{removeFollowerId}")
     public ResponseEntity<Boolean> removeFollower(@PathVariable int removeFollowerId, Principal principal) {
-        Optional<User> userOpt = getUserFromPrincipal(principal);
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(false);
-        }
-        return followService.removeFollower(userOpt.get().getUserId(), removeFollowerId);
-    }
-
-    private Optional<User> getUserFromPrincipal(Principal principal) {
-        if (principal == null) {
-            return Optional.empty();
-        }
-        return userRepository.findByEmail(principal.getName());
+        User user = getCurrentUser(principal);
+        followService.removeFollower(user.getUserId(), removeFollowerId);
+        return ResponseEntity.ok().build();
     }
 }

@@ -12,9 +12,6 @@ public class MessageDTO {
     private Timestamp createdAt;
     private List<String> imageUrls;
 
-    // Constructors, getters/setters (map from Message entity)
-
-
     public Integer getMessageId() {
         return messageId;
     }
