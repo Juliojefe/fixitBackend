@@ -1,6 +1,7 @@
 package com.example.fixit.service;
 
 import com.example.fixit.dto.response.MessageDTO;
+import com.example.fixit.exception.ResourceNotFoundException;
 import com.example.fixit.model.Chat;
 import com.example.fixit.model.Message;
 import com.example.fixit.model.User;
@@ -36,45 +37,31 @@ public class MessageService {
     @Autowired
     private MessageImageService messageImageService;
 
-    public ResponseEntity<MessageDTO> saveMessage(int chatId, String content, String email, List<String> imageUrls) {
-        try {
-            Optional<User> optUser = userRepository.findByEmail(email);
-            Optional<Chat> optChat = chatRepository.findById(chatId);
-            if (!optUser.isPresent() || !optChat.isPresent()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageDTO());
+    public MessageDTO saveMessage(int chatId, String content, String email, List<String> imageUrls) {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        Chat chat = chatRepository.findById(chatId).orElseThrow(() -> new ResourceNotFoundException("Chat was not found"));
+        Message message = new Message();
+        message.setContent(content);
+        message.setUser(user);
+        message.setChat(chat);
+        Message saved = messageRepository.save(message);
+        if (imageUrls != null && !imageUrls.isEmpty()) {
+            for (String url : imageUrls) {
+                messageImageService.addImage(saved.getMessageId(), url);
             }
-            User user = optUser.get();
-            Chat chat = optChat.get();
-            Message message = new Message();
-            message.setContent(content);
-            message.setUser(user);
-            message.setChat(chat);
-            Message saved = messageRepository.save(message);
-            if (imageUrls != null && !imageUrls.isEmpty()) {
-                for (String url : imageUrls) {
-                    messageImageService.addImage(saved.getMessageId(), url);
-                }
-            }
-            return ResponseEntity.ok(mapToDTO(saved));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+        return mapToDTO(saved);
     }
 
-    public ResponseEntity<List<MessageDTO>> getMessagesByChatId(int chatId, int page, int size) {
-        try {
-            if (!chatRepository.existsById(chatId)) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-            }
-            Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-            List<MessageDTO> messages = messageRepository.findByChatChatId(chatId, pageable)
-                    .stream()
-                    .map(this::mapToDTO)
-                    .collect(Collectors.toList());
-            return ResponseEntity.ok(messages);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    public List<MessageDTO> getMessagesByChatId(int chatId, int page, int size) {
+        if (!chatRepository.existsById(chatId)) {
+            throw new ResourceNotFoundException("The chat you are looking for was not found");
         }
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        return messageRepository.findByChatChatId(chatId, pageable)
+                .stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
     }
 
     private MessageDTO mapToDTO(Message message) {

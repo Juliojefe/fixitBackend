@@ -2,6 +2,7 @@ package com.example.fixit.controller;
 
 import com.example.fixit.dto.response.MessageDTO;
 import com.example.fixit.dto.request.MessageRequest;
+import com.example.fixit.exception.UnauthorizedException;
 import com.example.fixit.service.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -28,15 +29,32 @@ public class ChatWebSocketController {
             @DestinationVariable int chatId,
             @Payload MessageRequest request,
             Principal principal) {
-        if (principal == null) {    //  send error message to user
-            messagingTemplate.convertAndSendToUser("admin", "/queue/errors", "Unauthorized access");
+
+        if (principal == null) {
+            sendError(principal, "Unauthorized");
+            messagingTemplate.convertAndSend("/topic/errors", "Unauthorized access attempt");
             return;
         }
-        ResponseEntity<MessageDTO> savedMessage = messageService.saveMessage(chatId, request.getContent(), principal.getName(), request.getImageUrls());
-        if (savedMessage.getStatusCode() == HttpStatus.OK && savedMessage.getBody() != null) {
-            messagingTemplate.convertAndSend("/topic/chat/" + chatId, savedMessage.getBody());
-        } else { // send back an error message
-            messagingTemplate.convertAndSendToUser(principal.getName(), "/queue/errors", "Failed to send message: " + savedMessage.getStatusCode());
+        try {
+            MessageDTO message = messageService.saveMessage(
+                    chatId,
+                    request.getContent(),
+                    principal.getName(),
+                    request.getImageUrls()
+            );
+            messagingTemplate.convertAndSend("/topic/chat/" + chatId, message);
+        } catch (UnauthorizedException e) {
+            sendError(principal, "Access denied: " + e.getMessage());
+        } catch (Exception e) {
+            sendError(principal, "Failed to send message");
         }
+    }
+
+    private void sendError(Principal principal, String message) {
+        messagingTemplate.convertAndSendToUser(
+                principal.getName(),
+                "/queue/errors",
+                message
+        );
     }
 }

@@ -1,6 +1,9 @@
 package com.example.fixit.controller;
 
 import com.example.fixit.dto.response.MessageDTO;
+import com.example.fixit.exception.ResourceNotFoundException;
+import com.example.fixit.exception.UnauthorizedException;
+import com.example.fixit.model.User;
 import com.example.fixit.service.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -34,17 +37,12 @@ public class MessageController {
      * @param principal the authenticated user sending the message
      * @return          an HTTP status code representing the result of the operation
      */
-
     @PostMapping("/{chatId}")
     public ResponseEntity<Void> sendMessage(@PathVariable int chatId, @RequestBody MessageRequest request, Principal principal) {
-        if (principal == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        ResponseEntity<MessageDTO> savedMessage = messageService.saveMessage(chatId, request.getContent(), principal.getName(), request.getImageUrls());
-        if (savedMessage.getStatusCode() == HttpStatus.OK && savedMessage.getBody() != null) {
-            messagingTemplate.convertAndSend("/topic/chat/" + chatId, savedMessage.getBody());
-        }
-        return ResponseEntity.status(savedMessage.getStatusCode()).build();
+        principalCheck(principal);
+        MessageDTO savedMessage = messageService.saveMessage(chatId, request.getContent(), principal.getName(), request.getImageUrls());
+        messagingTemplate.convertAndSend("/topic/chat/" + chatId, savedMessage);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/{chatId}")
@@ -53,9 +51,13 @@ public class MessageController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             Principal principal) {
+        principalCheck(principal);
+        return ResponseEntity.ok(messageService.getMessagesByChatId(chatId, page, size));
+    }
+
+    private void principalCheck(Principal principal) {
         if (principal == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new UnauthorizedException("User not authenticated");
         }
-        return messageService.getMessagesByChatId(chatId, page, size);
     }
 }
