@@ -31,7 +31,6 @@ public class ChatWebSocketController {
             Principal principal) {
 
         if (principal == null) {
-            sendError(principal, "Unauthorized");
             messagingTemplate.convertAndSend("/topic/errors", "Unauthorized access attempt");
             return;
         }
