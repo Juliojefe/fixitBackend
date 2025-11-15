@@ -26,12 +26,29 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 @EnableWebSocketSecurity
 public class SecurityConfig {
+
+    private static final List<String> PUBLIC_ENDPOINTS = Arrays.asList(
+            "/api/auth/login",
+            "/api/auth/register",
+            "/api/auth/register/google",
+            "/api/auth/refresh",
+            "/oauth2/**",
+            "/login/oauth2/code/google",
+            "/api/post/owned/{userId}",
+            "/api/post/liked/{userId}",
+            "/api/post/{id}",
+            "/api/user/{id}/name-and-pfp",
+            "/api/user/{id}/profile/public",
+            "/api/user/all-ids",
+            "/ws-chat/**"  // Permit WebSocket handshake (auth checked via JWT filter)
+    );
 
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -50,23 +67,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll()
-                        .requestMatchers(
-                                "/api/auth/login",
-                                "/api/auth/register",
-                                "/api/auth/register/google",
-                                "/api/auth/refresh",
-                                "/oauth2/**",
-                                "/login/oauth2/code/google",
-                                "/api/post/owned/{userId}",
-                                "/api/post/liked/{userId}",
-                                "/api/post/{id}",
-                                "/api/user/summary/{id}",
-                                "api/user/summary/{id}",
-                                "/api/user/{id}/profile",
-                                "/api/user/all-ids",
-                                "/api/post/{id}",
-                                "/ws-chat/**"  // Permit WebSocket handshake (auth checked via JWT filter)
-                        ).permitAll()
+                        .requestMatchers(PUBLIC_ENDPOINTS.toArray(new String[0])).permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2
@@ -101,9 +102,10 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));  // Add production frontend if needed
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Upgrade", "Connection"));  // WebSocket-related headers
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Upgrade", "Connection", "Sec-WebSocket-Key", "Sec-WebSocket-Version"));  // Enhanced for WebSockets
+        configuration.setExposedHeaders(Arrays.asList("Authorization"));
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -112,6 +114,10 @@ public class SecurityConfig {
     }
 }
 
+
+/**
+ * This commented out portion opens up security. I am keeping it here for future testing.
+ */
 
 //package com.example.fixit.config;
 //
