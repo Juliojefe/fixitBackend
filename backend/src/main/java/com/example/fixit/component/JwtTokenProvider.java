@@ -3,8 +3,6 @@ package com.example.fixit.component;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
@@ -12,7 +10,6 @@ import java.util.Date;
 
 @Component
 public class JwtTokenProvider {
-    private static final Logger logger = LoggerFactory.getLogger(JwtTokenProvider.class);
 
     private final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256); // Secure key for signing
     private final long accessTokenValidity = 3600000; // 1 hour
@@ -48,7 +45,6 @@ public class JwtTokenProvider {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;
         } catch (Exception e) {
-            logger.error("Invalid JWT token: {}", e.getMessage());
             return false;
         }
     }
@@ -59,7 +55,6 @@ public class JwtTokenProvider {
             return Jwts.parserBuilder().setSigningKey(key).build()
                     .parseClaimsJws(token).getBody().getSubject();
         } catch (Exception e) {
-            logger.error("Error extracting email: {}", e.getMessage());
             return null;
         }
     }
@@ -70,7 +65,6 @@ public class JwtTokenProvider {
             return Jwts.parserBuilder().setSigningKey(key).build()
                     .parseClaimsJws(token).getBody().get("userId", Integer.class);
         } catch (Exception e) {
-            logger.error("Error extracting userId: {}", e.getMessage());
             return null;
         }
     }
