@@ -42,21 +42,21 @@ public class AuthService {
         String profilePic = request.getProfilePic() != null ? request.getProfilePic().trim() : getDefaultProfilePic();
 
         if (!password.equals(confirmPassword)) {
-            throw new UnauthorizedException("Passwords do not match");
+            return new AuthResponse("Passwords do not match");
         }
         Optional<User> existingUser = userRepository.findByEmail(email);
         if (existingUser.isPresent()) {
-            throw new UnauthorizedException("Email already in use");
+            return new AuthResponse("Email already in use");
         }
         if (!isValidPassword(password)) {
-            throw new UnauthorizedException("Invalid password:\n• At least 8 characters long\n• At least one uppercase letter\n• At least one lowercase letter\n• At least one number\n• At least one special character");
+            return new AuthResponse("Invalid password:\n• At least 8 characters long\n• At least one uppercase letter\n• At least one lowercase letter\n• At least one number\n• At least one special character");
         }
         if (!email.contains("@") || email.length() < 4) {
-            throw new UnauthorizedException("Invalid email");
+            return new AuthResponse("Invalid email");
         }
         String[] nameParts = name.split("\\s+");
         if (nameParts.length != 2 || nameParts[0].length() < 2 || nameParts[1].length() < 2) {
-            throw new UnauthorizedException("Invalid first or last name");
+            return new AuthResponse("Invalid first or last name");
         }
         User newUser = new User();
         newUser.setEmail(email);
@@ -76,18 +76,18 @@ public class AuthService {
         String profilePic = request.getProfilePic() != null ? request.getProfilePic().trim() : getDefaultProfilePic();
         Optional<User> existingUser = userRepository.findByEmail(email);
         if (existingUser.isPresent()) {
-            throw new UnauthorizedException("Email already in use");
+            return new AuthResponse("Email already in use");
         }
         Optional<User> existingGoogleUser = userRepository.findByGoogleId(googleId);
         if (existingGoogleUser.isPresent()) {
-            throw new UnauthorizedException("Google ID already registered");
+            return new AuthResponse("Google ID already registered");
         }
         if (!email.contains("@") || email.length() < 4) {
-            throw new UnauthorizedException("Invalid email");
+            return new AuthResponse("Invalid email");
         }
         String[] nameParts = name.split("\\s+");
         if (nameParts.length != 2 || nameParts[0].length() < 2 || nameParts[1].length() < 2) {
-            throw new UnauthorizedException("Invalid first or last name");
+            return new AuthResponse("Invalid first or last name");
         }
         User newUser = new User();
         newUser.setEmail(email);
@@ -105,7 +105,7 @@ public class AuthService {
         String password = loginRequest.getPassword() != null ? loginRequest.getPassword().trim() : "";
         Optional<User> userOpt = userRepository.findByEmail(email);
         if (userOpt.isEmpty() || !passwordEncoder.matches(password, userOpt.get().getPassword())) {
-            throw new UnauthorizedException("Invalid email or password");
+            return new AuthResponse("Invalid email or password");
         }
         User user = userOpt.get();
         return createSuccessResponse(user, false);
@@ -116,7 +116,7 @@ public class AuthService {
         googleId = googleId != null ? googleId.trim() : "";
         Optional<User> userOpt = userRepository.findByGoogleId(googleId);
         if (userOpt.isEmpty()) {
-            throw new UnauthorizedException("Google user not found, please register first");
+            return new AuthResponse("Google user not found, please register first");
         }
         User user = userOpt.get();
         return createSuccessResponse(user, true);
