@@ -8,8 +8,11 @@ import com.example.fixit.dto.response.AuthResponse;
 import com.example.fixit.dto.response.RefreshResponse;
 import com.example.fixit.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -20,26 +23,41 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@RequestBody UserRegisterRequest request) {
-        return ResponseEntity.ok(authService.register(request));
-    }
-
-    @PatchMapping("/register/google/")
-    public ResponseEntity<AuthResponse> googleRegister(@RequestBody GoogleUserRegisterRequest request) {
-        return ResponseEntity.ok(authService.googleRegister(request));
+        AuthResponse resp = authService.register(request);
+        if (resp.getAccessToken() != null) {
+            return ResponseEntity.ok(resp);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(resp);
+        }
     }
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody UserLoginRequest loginRequest) {
-        return ResponseEntity.ok(authService.login(loginRequest));
+        AuthResponse resp = authService.login(loginRequest);
+        if (resp.getAccessToken() != null) {
+            return ResponseEntity.ok(resp);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(resp);
+        }
     }
 
-    @PostMapping("/login/google")
-    public ResponseEntity<AuthResponse> googleLogin(@RequestBody String googleId) {
-        return ResponseEntity.ok(authService.googleLogin(googleId));
+    @PostMapping("/google/register")
+    public ResponseEntity<AuthResponse> googleRegister(@RequestBody GoogleUserRegisterRequest request) {
+        AuthResponse resp = authService.googleRegister(request);
+        if (resp.getAccessToken() != null) {
+            return ResponseEntity.ok(resp);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(resp);
+        }
     }
 
-    @PostMapping("/refresh")
-    public ResponseEntity<RefreshResponse> refreshToken(@RequestBody RefreshRequest refreshRequest) {
-        return ResponseEntity.ok(authService.refreshToken(refreshRequest));
+    @PostMapping("/google/login")
+    public ResponseEntity<AuthResponse> googleLogin(@RequestBody Map<String, String> request) {
+        AuthResponse resp = authService.googleLogin(request.get("googleId"));
+        if (resp.getAccessToken() != null) {
+            return ResponseEntity.ok(resp);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(resp);
+        }
     }
 }
