@@ -172,6 +172,9 @@ public class AuthService {
         refreshTokenEntity.setUser(user);
         refreshTokenEntity.setExpiryDate(Instant.now().plus(7, ChronoUnit.DAYS));
         refreshTokenRepository.save(refreshTokenEntity);
-        return new AuthResponse(user.getName(), user.getEmail(), user.getProfilePic(), isGoogle, accessToken, refreshToken);
+        UserRoles ur = user.getUserRoles();
+        Boolean isAdmin = ur.getIsAdmin();
+        Boolean isMechanic =  ur.getIsMechanic();
+        return new AuthResponse(user.getName(), user.getEmail(), user.getProfilePic(), isGoogle, accessToken, refreshToken, isAdmin, isMechanic);
     }
 }

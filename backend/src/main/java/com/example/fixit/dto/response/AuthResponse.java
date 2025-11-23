@@ -1,5 +1,7 @@
 package com.example.fixit.dto.response;
 
+import com.example.fixit.model.User;
+
 public class AuthResponse {
     private String message;
     private String name;
@@ -8,15 +10,19 @@ public class AuthResponse {
     private boolean isGoogle;
     private String accessToken;
     private String refreshToken;
+    private Boolean isMechanic;
+    private Boolean isAdmin;
 
     // Constructor for success (message is omitted/null)
-    public AuthResponse(String name, String email, String profilePic, boolean isGoogle, String accessToken, String refreshToken) {
+    public AuthResponse(String name, String email, String profilePic, boolean isGoogle, String accessToken, String refreshToken, Boolean isAdmin, Boolean isMechanic) {
         this.name = name;
         this.email = email;
         this.profilePic = profilePic;
         this.isGoogle = isGoogle;
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
+        this.isAdmin = isAdmin;
+        this.isMechanic = isMechanic;
     }
 
     // Constructor for error (other fields are omitted/null)
@@ -78,5 +84,21 @@ public class AuthResponse {
 
     public void setRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
+    }
+
+    public Boolean getIsMechanic() {
+        return isMechanic;
+    }
+
+    public void setIsMechanic(Boolean mechanic) {
+        isMechanic = mechanic;
+    }
+
+    public Boolean getIsAdmin() {
+        return isAdmin;
+    }
+
+    public void setIsAdmin(Boolean admin) {
+        isAdmin = admin;
     }
 }

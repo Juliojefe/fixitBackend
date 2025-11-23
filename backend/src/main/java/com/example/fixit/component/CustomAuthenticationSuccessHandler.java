@@ -24,48 +24,62 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
     private AuthService authService;
 
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
-        OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
-        OAuth2User oauthUser = oauthToken.getPrincipal();
-        String googleId = oauthUser.getAttribute("sub");
-        String email = oauthUser.getAttribute("email");
-        String name = oauthUser.getAttribute("name");
-        String profilePic = oauthUser.getAttribute("picture");
-        if (email == null || name == null || googleId == null) {
-            throw new IllegalArgumentException("Missing required attributes from Google: email, name, or sub");
-        }
-        String finalProfilePic = (profilePic != null) ? profilePic : "";
         try {
-            // Try login
-            AuthResponse loginResp = authService.googleLogin(googleId);
-            buildRedirect(response, loginResp, true);
-        } catch (UnauthorizedException ex) {
-            // Login failed → auto-register
-            GoogleUserRegisterRequest registerRequest =
-                    new GoogleUserRegisterRequest(googleId, email, name, finalProfilePic);
-            AuthResponse registerResp = authService.googleRegister(registerRequest);
-            buildRedirect(response, registerResp, true); // assume registration succeeds
+            OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
+            OAuth2User oauthUser = oauthToken.getPrincipal();
+            String googleId = oauthUser.getAttribute("sub");
+            String email = oauthUser.getAttribute("email");
+            String name = oauthUser.getAttribute("name");
+            String profilePic = oauthUser.getAttribute("picture");
+            if (email == null || name == null || googleId == null) {
+                throw new IllegalArgumentException("Missing required attributes from Google: email, name, or sub");
+            }
+            String finalProfilePic = (profilePic != null) ? profilePic : "";
+
+            try {
+                // Try login
+                AuthResponse loginResp = authService.googleLogin(googleId);
+                buildRedirect(response, loginResp);
+            } catch (UnauthorizedException ex) {
+                // Login failed so auto-register
+                GoogleUserRegisterRequest registerRequest =
+                        new GoogleUserRegisterRequest(googleId, email, name, finalProfilePic);
+                AuthResponse registerResp = authService.googleRegister(registerRequest);
+                buildRedirect(response, registerResp);
+            }
+        } catch (Exception ex) {
+            buildErrorRedirect(response, ex.getMessage());
         }
     }
 
-    // Updated helper method to build the redirect URL using UriComponentsBuilder
-    private void buildRedirect(HttpServletResponse response, AuthResponse authResponse, boolean isSuccess) throws IOException {
+    // Helper method to build the redirect URL for success or internal errors
+    private void buildRedirect(HttpServletResponse response, AuthResponse authResponse) throws IOException {
         String baseUrl = "http://localhost:3000/auth-callback";
-        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl)
-                .queryParam("success", String.valueOf(isSuccess));
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
 
-        if (isSuccess && authResponse != null && authResponse.getAccessToken() != null) {
+        if (authResponse != null && authResponse.getAccessToken() != null) {
             uriBuilder.queryParam("name", authResponse.getName());
             uriBuilder.queryParam("email", authResponse.getEmail());
             uriBuilder.queryParam("profilePic", authResponse.getProfilePic());
             uriBuilder.queryParam("isGoogle", authResponse.isGoogle());
             uriBuilder.queryParam("accessToken", authResponse.getAccessToken());
             uriBuilder.queryParam("refreshToken", authResponse.getRefreshToken());
-        } else if (authResponse != null && authResponse.getMessage() != null) {
-            uriBuilder.queryParam("message", authResponse.getMessage());
+            uriBuilder.queryParam("isAdmin", authResponse.getIsAdmin());
+            uriBuilder.queryParam("isMechanic", authResponse.getIsMechanic());
         } else {
-            uriBuilder.queryParam("message", "An unexpected error occurred");
+            String message = (authResponse != null && authResponse.getMessage() != null)
+                    ? authResponse.getMessage() : "An unexpected error occurred";
+            uriBuilder.queryParam("message", message);
         }
 
+        response.sendRedirect(uriBuilder.toUriString());
+    }
+
+    // Helper method for error redirects (e.g., attribute missing or other exceptions)
+    private void buildErrorRedirect(HttpServletResponse response, String errorMessage) throws IOException {
+        String baseUrl = "http://localhost:3000/auth-callback";
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl)
+                .queryParam("error", errorMessage != null ? errorMessage : "An unexpected error occurred");
         response.sendRedirect(uriBuilder.toUriString());
     }
 }
