@@ -1,6 +1,7 @@
 package com.example.fixit.config;
 
 import com.example.fixit.component.CustomAuthenticationSuccessHandler;
+import com.example.fixit.component.CustomAuthenticationFailureHandler;
 import com.example.fixit.component.JwtAuthenticationFilter;
 import com.example.fixit.component.JwtAuthenticationEntryPoint;
 import jakarta.servlet.DispatcherType;
@@ -57,6 +58,9 @@ public class SecurityConfig {
     private CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
 
     @Autowired
+    private CustomAuthenticationFailureHandler customAuthenticationFailureHandler;
+
+    @Autowired
     private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
     @Bean
@@ -72,6 +76,7 @@ public class SecurityConfig {
                 )
                 .oauth2Login(oauth2 -> oauth2
                         .successHandler(customAuthenticationSuccessHandler)
+                        .failureHandler(customAuthenticationFailureHandler)
                 )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
