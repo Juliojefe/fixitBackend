@@ -64,6 +64,8 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
             uriBuilder.queryParam("isGoogle", authResponse.isGoogle());
             uriBuilder.queryParam("accessToken", authResponse.getAccessToken());
             uriBuilder.queryParam("refreshToken", authResponse.getRefreshToken());
+            uriBuilder.queryParam("isAdmin", authResponse.getIsAdmin());
+            uriBuilder.queryParam("isMechanic", authResponse.getIsMechanic());
         } else {
             String message = (authResponse != null && authResponse.getMessage() != null)
                     ? authResponse.getMessage() : "An unexpected error occurred";
