@@ -12,6 +12,7 @@ import java.util.Set;
 
 public class PostSummary {
 
+    private int postId;
     private int authorId;
     private String description;
     private String createdBy;
@@ -25,6 +26,7 @@ public class PostSummary {
     private Set<Integer> savedIds;
 
     public PostSummary(Post post) {
+        this.postId = post.getPostId();
         this.authorId = post.getUser().getUserId();
         this.description = post.getDescription();
         this.createdBy = post.getUser().getName();
@@ -36,6 +38,14 @@ public class PostSummary {
         this.commentCount = post.getComments().size();
         this.imageUrls = getImageUrls(post.getPostImages());
         this.savedIds = getUserIds(post.getSavers());
+    }
+
+    public int getPostId() {
+        return postId;
+    }
+
+    public void setPostId(int postId) {
+        this.postId = postId;
     }
 
     private Set<Integer> getUserIds(Set<User> users) {
