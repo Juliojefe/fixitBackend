@@ -9,6 +9,10 @@ import com.example.fixit.model.Post;
 import com.example.fixit.model.PostImage;
 import com.example.fixit.model.User;
 import com.example.fixit.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.example.fixit.repository.PostRepository;
@@ -51,7 +55,31 @@ public class PostService {
         return ids;
     }
 
-    public List<Integer> getFollowingPostIds(User u) {
+    public Page<PostSummary> getExplorePosts(Pageable pageable, User u) {
+        Set<Integer> excludedUserIds = new HashSet<>();
+        for (User followedUser : u.getFollowing()) {
+            excludedUserIds.add(followedUser.getUserId());
+        }
+        excludedUserIds.add(u.getUserId()); // Add the current user to the excluded set
+        Page<Post> posts = postRepository.findByUserUserIdNotIn(excludedUserIds, pageable);
+        List<PostSummary> summaries = new ArrayList<>();
+        for (Post post : posts.getContent()) {
+            summaries.add(new PostSummary(post));
+        }
+        return new PageImpl<>(summaries, pageable, posts.getTotalElements());
+    }
+
+    public Page<PostSummary> getExplorePostsGuest(Pageable pageable) {
+        Page<Post> posts = postRepository.findAll(pageable);
+        List<PostSummary> summaries = new ArrayList<>();
+        for (Post post : posts.getContent()) {
+            summaries.add(new PostSummary(post));
+        }
+        return new PageImpl<>(summaries, pageable, posts.getTotalElements());
+    }
+
+
+        public List<Integer> getFollowingPostIds(User u) {
         Set<User> followedUsers = u.getFollowing();
         List<Post> followingPosts = new ArrayList<>();
         for (User followed : followedUsers) {

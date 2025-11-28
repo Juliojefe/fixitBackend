@@ -8,10 +8,13 @@ import com.example.fixit.model.User;
 import com.example.fixit.repository.UserRepository;
 import com.example.fixit.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
 import java.io.IOException;
 import java.security.Principal;
@@ -38,6 +41,30 @@ public class PostController {
     @GetMapping("/all-ids")
     public ResponseEntity<Set<Integer>> getAllPostIds() {
         return ResponseEntity.ok(postService.getAllPostIds());
+    }
+
+    @GetMapping("/explore")
+    public ResponseEntity<Page<PostSummary>> getExplorePosts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            Principal principal
+    ) {
+        User user = getUserFromPrincipalOrThrow(principal);
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok(
+                postService.getExplorePosts(pageable, user)
+        );
+    }
+
+    @GetMapping("/explore/guest")
+    public ResponseEntity<Page<PostSummary>> getExplorePostsGuest(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok(
+                postService.getExplorePostsGuest(pageable)
+        );
     }
 
     @GetMapping("/following")
