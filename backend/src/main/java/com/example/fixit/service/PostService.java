@@ -70,7 +70,12 @@ public class PostService {
     }
 
     public Page<PostSummary> getExplorePostsGuest(Pageable pageable) {
-
+        Page<Post> posts = postRepository.findAll(pageable);
+        List<PostSummary> summaries = new ArrayList<>();
+        for (Post post : posts.getContent()) {
+            summaries.add(new PostSummary(post));
+        }
+        return new PageImpl<>(summaries, pageable, posts.getTotalElements());
     }
 
 
